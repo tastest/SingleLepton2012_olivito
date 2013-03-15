@@ -26,16 +26,23 @@ TGraphErrors* compareDataMC( std::vector<TFile*> mcfiles , vector<char*> labels 
 		    bool overlayData = true , bool residual = false, bool drawLegend = true , 
 			     bool log = false , bool normalize = false , bool fit = false, float mcnorm = -1. );
 
-void initSymbols(bool);
-void  printLine(bool);
-void printYields( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , const char* dir , bool doData, bool latex = false );
+void initSymbols(int latex);
+void  printLine(int latex);
+void printHeader(bool dilep = false);
+void print( TH1F* h , string label , bool dilep = false, bool correlatedError = false );
+void printYields( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , const char* dir , bool doData, int latex = 0 );
 void fillYieldHist( TH1F* hin, TH1F* hyield, int bin );
 //void deleteHistos();
 TLegend *getLegend( vector<char*> labels , bool overlayData, 
 		    float x1 = 0.7, float y1 = 0.45 , float x2 = 0.87 , float y2 = 0.94 );
 
 TGraphAsymmErrors* makeBand(TH1F* centhist, TH1F* uphist, TH1F* dnhist);
-TCanvas* compareNormalized(std::string histname, TFile* file1, TFile* file2, TFile* file3, int rebin = 1, bool norm = true);
+TCanvas* compareNormalized(std::string histname, TFile* file1, std::string label1, TFile* file2, std::string label2, int rebin = 1, bool norm = true, TFile* file3 = 0, std::string label3 = "");
+TCanvas* compareNormalized(TH1F* h1, std::string label1, TH1F* h2, std::string label2, int rebin = 1, bool norm = true, TH1F* h3 = 0, std::string label3 = "");
+
+TH1F* cumulate (TH1F* in, bool increasing);
+TGraphErrors* eff_rej (TH1F* signal, TH1F* background, bool normalize, bool increasing, bool print = false);
+TGraph* s_over_rootb (TH1F* signal, TH1F* background, bool increasing, bool do_s_over_b = false, bool print = false);
 
 char* pm;         
 char* delim;      

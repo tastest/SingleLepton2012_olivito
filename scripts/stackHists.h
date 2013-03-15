@@ -8,6 +8,7 @@
 #include "TGraphErrors.h"
 #include "TCanvas.h"
 #include "TH1.h"
+#include "TString.h"
 
 struct histStyle {
   int nbins;
@@ -23,29 +24,36 @@ TFile *tt0l_;
 TFile *tt1l_;
 TFile *tt2l_;
 TFile *wjets_;
+TFile *wbb_;
 TFile *zjets_;
 TFile *vv_;
 TFile *t_;
 TFile *ttV_;
 TFile *vvv_;
 TFile *rare_;
+TFile *whbb_;
 
 TFile *TChiwh_150_1_;
 TFile *TChiwh_200_1_;
 TFile *TChiwh_250_1_;
+TFile *TChiwh_250_25_;
+TFile *TChiwh_250_50_;
 TFile *TChiwh_300_1_;
 TFile *TChiwh_350_1_;
 
 vector<TFile*>  mcfiles_;
 vector<char*>   mclabels_;
 
-histStyle getHistStyle(char* hist);
-void initialize( char* path, bool doData = true, bool doSig = false );
-//TH1F* stackHistAuto( char* path, char* hist, char* flavor, char* dir, bool doData = true, int rebin = 1, bool normalize = false );
-TGraphErrors* stackHistAuto( char* path, char* hist, char* flavor, char* dir, bool doData = true, 
-                             int rebin = 1, bool normalize = false, float mcnorm = -1. );
-//TCanvas* stackHistAuto( char* path, char* hist, char* flavor, char* dir, bool doData = true, 
-//                             int rebin = 1, bool normalize = false, float mcnorm = -1. );
-void printYieldsDir( char* path, char* dir, bool doData, bool latex );
+histStyle getHistStyle(const char* hist);
+void initialize( const char* path, bool doData = true, int doSig = 0 );
+//TH1F* stackHistAuto( const char* path, const char* hist, const char* flavor, const char* dir, bool doData = true, int rebin = 1, bool normalize = false );
+// TGraphErrors* stackHistAuto( const char* path, const char* hist, const char* flavor, const char* dir, bool doData = true, 
+//                              int rebin = 1, bool normalize = false, float mcnorm = -1. );
+TCanvas* stackHistAuto( const char* path, const char* hist, const char* flavor, const char* dir, bool doData = true, 
+			int rebin = 1, bool normalize = false, float mcnorm = -1., int doSig = 0 );
+void printYieldsDir( const char* path, const char* dir, bool doData, int latex = 0, int doSig = 9 );
+void saveAllHists( const char* path, const char* dir, const char* flavor, const char* outpath, bool doData, int rebin = 1, bool normalize = false, float mcnorm = -1. );
+bool matchHistName(const TString& histname, const TString& matchname);
+bool matchHistName(const TString& histname, const char* matchname);
 
 #endif
