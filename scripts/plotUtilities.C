@@ -6,6 +6,7 @@
 #include <fstream>
 
 #include "TCanvas.h"
+#include "TObject.h"
 #include "TLegend.h"
 #include "TChain.h"
 #include "TDirectory.h"
@@ -415,6 +416,7 @@ TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1,
     if( strcmp("tttau",t)   == 0 ) t = "t#bar{t} #rightarrow l#tau/#tau#tau";
     if( strcmp("ttfake",t)  == 0 ) t = "t#bar{t} #rightarrow fake";
     if( strcmp("t",t)       == 0 ) t = "single top";
+    if( strcmp("single_top",t)       == 0 ) t = "single top";
     if( strcmp("wjets",t)   == 0 ) t = "W+jets";
     if( strcmp("zjets",t)   == 0 ) t = "Z+jets";
     if( strcmp("ww",t)      == 0 ) t = "WW";
@@ -587,7 +589,11 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     float xbinsize = (xmax - xmin)/float(nbins);
     int rebinFactor = int(xbinsize/xbinsize_original);
     if (rebinFactor != 1) mchist[imc]->Rebin(rebinFactor);
-    mchist[imc]->SetAxisRange(xmin,xmax,"X");
+    mchist[imc]->SetAxisRange(xmin,xmax-0.1*xbinsize,"X");
+    Double_t err;
+    float lastbin_and_overflow =  mchist[imc]->IntegralAndError(nbins,-1,err);
+    mchist[imc]->SetBinContent(nbins,lastbin_and_overflow);
+    mchist[imc]->SetBinError(nbins,err);
 
     if( normalize ) {
       if (mcnorm < 0.) mchist[imc]->Scale(SF);
@@ -628,7 +634,11 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     float xbinsize = (xmax - xmin)/float(nbins);
     int rebinFactor = int(xbinsize/xbinsize_original);
     if (rebinFactor != 1) datahist->Rebin(rebinFactor);
-    datahist->SetAxisRange(xmin,xmax,"X");
+    datahist->SetAxisRange(xmin,xmax-0.1*xbinsize,"X");
+    Double_t err;
+    float lastbin_and_overflow =  datahist->IntegralAndError(nbins,-1,err);
+    datahist->SetBinContent(nbins,lastbin_and_overflow);
+    datahist->SetBinError(nbins,err);
 
     float max = datahist->GetMaximum() + datahist->GetBinError(datahist->GetMaximumBin());
     if( mctothist->GetMaximum() > max ) max = mctothist->GetMaximum();
@@ -959,8 +969,8 @@ TCanvas* compareNormalized(TH1F* h1, std::string label1, TH1F* h2, std::string l
   h2_clone->SetLineColor(kRed);
   h2_clone->SetLineWidth(2);
   if (h3_clone) {
-    h3_clone->SetMarkerColor(kGreen);
-    h3_clone->SetLineColor(kGreen);
+    h3_clone->SetMarkerColor(7);
+    h3_clone->SetLineColor(7);
     h3_clone->SetLineWidth(2);
   }
 
@@ -1102,3 +1112,48 @@ TGraph* s_over_rootb (TH1F* signal, TH1F* background, bool increasing, bool do_s
   return ret;
 }
 
+//____________________________________________________________________
+TLegend* init_legend(float x1, float y1, float x2, float y2) {
+  // intializes a legend with white background, no border
+  TLegend* l = new TLegend(x1,y1,x2,y2);
+  l->SetLineColor(0);
+  l->SetFillColor(0);
+  l->SetShadowColor(0);
+  return l;
+}
+
+//______________________________________________________________________________
+TLegend* legendize(TCanvas* c, const TString& opt, const TString& label1, const TString& label2, const TString& label3 ) {
+
+  TString labels[3] = {label1,label2,label3};
+  // makes a basic legend by finding all TH1s and graphs in a canvas
+  TList* clist = c->GetListOfPrimitives();
+  TLegend* l = init_legend();
+  // iterate over list of primitives
+  int nhists = 0;
+  TIter next(clist);
+  TObject* obj = 0;
+  while ((obj = next())) {
+    // check for TH1 or TGraph
+    if (TString(obj->ClassName()).Contains("TH1")) {
+      TH1* h = (TH1*)obj;
+      if (nhists <= 2) {
+	l->AddEntry(h,labels[nhists],opt);
+      } else {
+	l->AddEntry(h,"",opt);
+      }
+      nhists++;
+    } else if (TString(obj->ClassName()).Contains("TGraph")) {
+      TGraph* h = (TGraph*)obj;
+      if (nhists <= 2) {
+	l->AddEntry(h,labels[nhists],opt);
+      } else {
+	l->AddEntry(h,"",opt);
+      }
+      nhists++;
+    }
+  }
+  l->Draw("same");
+
+  return l;
+}

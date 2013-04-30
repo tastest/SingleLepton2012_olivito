@@ -44,6 +44,9 @@ TH1F* cumulate (TH1F* in, bool increasing);
 TGraphErrors* eff_rej (TH1F* signal, TH1F* background, bool normalize, bool increasing, bool print = false);
 TGraph* s_over_rootb (TH1F* signal, TH1F* background, bool increasing, bool do_s_over_b = false, bool print = false);
 
+TLegend* init_legend(float x1=0.5, float y1=0.5, float x2=0.88, float y2=0.8);
+TLegend* legendize(TCanvas* c, const TString& opt = 'l', const TString& label1 = "", const TString& label2 = "", const TString& label3 = "");
+
 char* pm;         
 char* delim;      
 char* delimstart; 
