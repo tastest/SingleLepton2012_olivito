@@ -63,8 +63,8 @@ void initialize( const char* path, bool doData, int doSig ) {
   std::cout << "Reading files from path: " << path << std::endl;
 
   if (doData) data_ = new TFile(Form("%s/data_histos.root",path));
-  //  wjets_ = new TFile(Form("%s/wjets_histos.root",path));
-  wjets_ = new TFile(Form("%s/wjets_comb_histos.root",path));
+  wjets_ = new TFile(Form("%s/wjets_histos.root",path));
+  // wjets_ = new TFile(Form("%s/wjets_comb_histos.root",path));
   //  wbb_ = new TFile(Form("%s/wbb_histos.root",path));
   zjets_ = new TFile(Form("%s/zjets_histos.root",path));
   tt_ = new TFile(Form("%s/ttbar_histos.root",path));
@@ -75,6 +75,8 @@ void initialize( const char* path, bool doData, int doSig ) {
   tt2l_ = new TFile(Form("%s/ttbar_mg_2l_histos.root",path));
   vv_ = new TFile(Form("%s/VV_histos.root",path));
   t_ = new TFile(Form("%s/single_top_histos.root",path));
+  t1l_ = new TFile(Form("%s/single_top_1l_histos.root",path));
+  t2l_ = new TFile(Form("%s/single_top_2l_histos.root",path));
   ttV_ = new TFile(Form("%s/ttV_histos.root",path));
   vvv_ = new TFile(Form("%s/VVV_histos.root",path));
   rare_ = new TFile(Form("%s/rare_histos.root",path));
@@ -102,7 +104,9 @@ void initialize( const char* path, bool doData, int doSig ) {
   //  mcfiles_.push_back(tt0l_);    mclabels_.push_back("ttbar 0l");
   mcfiles_.push_back(wjets_); mclabels_.push_back("wjets");
   //  mcfiles_.push_back(wbb_); mclabels_.push_back("wbb");
-  mcfiles_.push_back(t_);     mclabels_.push_back("single_top");
+  mcfiles_.push_back(t_);     mclabels_.push_back("single top");
+  // mcfiles_.push_back(t1l_);     mclabels_.push_back("single top 1l");
+  // mcfiles_.push_back(t2l_);     mclabels_.push_back("single top 2l");
   //  mcfiles_.push_back(zjets_); mclabels_.push_back("zjets");
   //  mcfiles_.push_back(vv_);    mclabels_.push_back("VV");
   //  mcfiles_.push_back(ttV_);   mclabels_.push_back("ttV");
@@ -170,40 +174,67 @@ void printYieldsDir( const char* path, const char* dir, bool doData, int latex, 
 void saveAllHists( const char* path, const char* dir, const char* flavor, const char* outpath, bool doData, int rebin, bool normalize, float mcnorm ) {
 
   std::vector<std::string> histnames;
-  histnames.push_back("h_bbmass");
-  histnames.push_back("h_pfmet");
-  histnames.push_back("h_lep1mt");
-  histnames.push_back("h_mt2bl");
-  histnames.push_back("h_mt2b");
-  histnames.push_back("h_mt2w");
+
+  // histnames.push_back("h_bbmass");
+  // histnames.push_back("h_met");
+  // histnames.push_back("h_lep1mt");
+  // histnames.push_back("h_mt2bl");
+  // histnames.push_back("h_mt2b");
+  // histnames.push_back("h_mt2w");
+  // histnames.push_back("h_bbpt");
+  // histnames.push_back("h_wpt");
+  // histnames.push_back("h_lep1pt");
+  // histnames.push_back("h_lep1metdphi");
+  // histnames.push_back("h_njets");
+  // histnames.push_back("h_njetsalleta");
+  // histnames.push_back("h_nbjets");
+  // histnames.push_back("h_jet1pt");
+  // histnames.push_back("h_jet2pt");
+  // if (!TString(dir).Contains("cr5")) {
+  //   histnames.push_back("h_bjet1pt");
+  //   histnames.push_back("h_bjet2pt");
+  // }
+  // // histnames.push_back("h_jet1csv");
+  // // histnames.push_back("h_jet2csv");
+  // if (TString(dir).Contains("cr2")) {
+  //   histnames.push_back("h_isotrkpt");
+  //   histnames.push_back("h_lep1isotrkdphi");
+  // }
+  // if (TString(dir).Contains("cr3") || TString(dir).Contains("cr4")) {
+  //   //  if (TString(dir).Contains("cr3")) {
+  //   //    histnames.clear();
+  //   histnames.push_back("h_pseudomet_lep");
+  //   histnames.push_back("h_pseudomt_lep");
+  //   histnames.push_back("h_pseudomt2bl");
+  //   histnames.push_back("h_leppt");
+  //   histnames.push_back("h_dphi_pseudomet_lep");
+  //   histnames.push_back("h_dildphi");
+  // }
+
+  // for investigating met components
+  histnames.push_back("h_met");
+  histnames.push_back("h_trkmet");
+  histnames.push_back("h_met_soft");
+  histnames.push_back("h_sumet");
+  histnames.push_back("h_sumet_soft");
+  histnames.push_back("h_ht");
+  histnames.push_back("h_htlep");
+  histnames.push_back("h_ljetspt");
   histnames.push_back("h_bbpt");
-  histnames.push_back("h_wpt");
   histnames.push_back("h_lep1pt");
-  histnames.push_back("h_lep1metdphi");
-  histnames.push_back("h_njets");
-  histnames.push_back("h_njetsalleta");
-  histnames.push_back("h_nbjets");
   histnames.push_back("h_jet1pt");
   histnames.push_back("h_jet2pt");
-  histnames.push_back("h_bjet1pt");
-  histnames.push_back("h_bjet2pt");
-  histnames.push_back("h_jet1csv");
-  histnames.push_back("h_jet2csv");
-  //  if (TString(dir).Contains("cr3") || TString(dir).Contains("cr6")) {
-  if (TString(dir).Contains("cr3")) {
-    //    histnames.clear();
-    histnames.push_back("h_pseudomet_lep");
-    histnames.push_back("h_pseudomt_lep");
-    histnames.push_back("h_pseudomt2bl");
-    histnames.push_back("h_leppt");
-    histnames.push_back("h_dphi_pseudomet_lep");
-    histnames.push_back("h_dildphi");
+  histnames.push_back("h_rhovor");
+  if (!TString(dir).Contains("cr5") && !TString(dir).Contains("cr11")) {
+    histnames.push_back("h_bjet1pt");
+    histnames.push_back("h_bjet2pt");
+    histnames.push_back("h_lbbpt");
   }
 
   for (unsigned int i = 0; i < histnames.size(); ++i) {
     std::string label_flavor = std::string(flavor);
     if (std::string(flavor).length() > 0) histnames[i] += std::string("_") + std::string(flavor);
-    else if (TString(dir).Contains("cr3") || TString(dir).Contains("cr6")) label_flavor = "all";
+    else if (TString(dir).Contains("cr3") || TString(dir).Contains("cr4")) label_flavor = "all";
     TCanvas* c = stackHistAuto(path, histnames[i].c_str(), label_flavor.c_str(), dir, doData, rebin, normalize, mcnorm);
     c->SaveAs(Form("%s/%s_%s.eps",outpath,dir,TString(histnames[i]).ReplaceAll("h_","").Data()));
   }
@@ -220,6 +251,18 @@ histStyle getHistStyle( const char* hist ) {
     style.xmin = 0.;
     style.xmax = 500.;
     style.xtitle = "H_{T} [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_ht")) {
+    style.nbins = 32;
+    style.xmin = 0.;
+    style.xmax = 800.;
+    style.xtitle = "H_{T} [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_htlep")) {
+    style.nbins = 32;
+    style.xmin = 0.;
+    style.xmax = 800.;
+    style.xtitle = "H_{T}+p_{T}(lep) [GeV]";
     style.log = true;
   } else if (matchHistName(histString,"h_ht40")) {
     style.nbins = 100;
@@ -365,12 +408,48 @@ histStyle getHistStyle( const char* hist ) {
     style.xmax = TMath::Pi();
     style.xtitle = "#phi(lep2)";
     style.log = false;
+  } else if (matchHistName(histString,"h_lep1isopf")) {
+    style.nbins = 25;
+    style.xmin = 0.;
+    style.xmax = 0.5;
+    style.xtitle = "isopf(lep1) [GeV]";
+    style.log = false;
   } else if (matchHistName(histString,"h_lep1metdphi")) {
     style.nbins = 10;
     style.xmin = 0.0;
     style.xmax = TMath::Pi();
     style.xtitle = "#Delta#phi(lep1,MET)";
     style.log = false;
+  } else if (matchHistName(histString,"h_jet1metdphi")) {
+    style.nbins = 10;
+    style.xmin = 0.0;
+    style.xmax = TMath::Pi();
+    style.xtitle = "#Delta#phi(jet1,MET)";
+    style.log = false;
+  } else if (matchHistName(histString,"h_jet2metdphi")) {
+    style.nbins = 10;
+    style.xmin = 0.0;
+    style.xmax = TMath::Pi();
+    style.xtitle = "#Delta#phi(jet2,MET)";
+    style.log = false;
+  } else if (matchHistName(histString,"h_bjet1metdphi")) {
+    style.nbins = 10;
+    style.xmin = 0.0;
+    style.xmax = TMath::Pi();
+    style.xtitle = "#Delta#phi(bjet1,MET)";
+    style.log = false;
+  } else if (matchHistName(histString,"h_bjet2metdphi")) {
+    style.nbins = 10;
+    style.xmin = 0.0;
+    style.xmax = TMath::Pi();
+    style.xtitle = "#Delta#phi(bjet2,MET)";
+    style.log = false;
+  } else if (matchHistName(histString,"h_isotrkpt")) {
+    style.nbins = 30;
+    style.xmin = 0.;
+    style.xmax = 300.;
+    style.xtitle = "p_{T}(iso track) [GeV]";
+    style.log = true;
   } else if (matchHistName(histString,"h_mt2b")) {
     style.nbins = 20;
     style.xmin = 0.;
@@ -426,9 +505,9 @@ histStyle getHistStyle( const char* hist ) {
     style.xtitle = "y(jet1)";
     style.log = false;
   } else if (matchHistName(histString,"h_jet1pt")) {
-    style.nbins = 30;
+    style.nbins = 50;
     style.xmin = 0.;
-    style.xmax = 300.;
+    style.xmax = 500.;
     style.xtitle = "p_{T}(jet1) [GeV]";
     style.log = true;
   } else if (matchHistName(histString,"h_jet2pt")) {
@@ -437,10 +516,40 @@ histStyle getHistStyle( const char* hist ) {
     style.xmax = 300.;
     style.xtitle = "p_{T}(jet2) [GeV]";
     style.log = true;
-  } else if (matchHistName(histString,"h_bjet1pt")) {
+  } else if (matchHistName(histString,"h_jet3pt")) {
     style.nbins = 30;
     style.xmin = 0.;
     style.xmax = 300.;
+    style.xtitle = "p_{T}(jet3) [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_jet1pumva")) {
+    style.nbins = 25;
+    style.xmin = -1.0;
+    style.xmax = 1.0;
+    style.xtitle = "PU MVA(jet1)";
+    style.log = false;
+  } else if (matchHistName(histString,"h_jet2pumva")) {
+    style.nbins = 25;
+    style.xmin = -1.0;
+    style.xmax = 1.0;
+    style.xtitle = "PU MVA(jet2)";
+    style.log = false;
+  } else if (matchHistName(histString,"h_fwdjet1pt")) {
+    style.nbins = 30;
+    style.xmin = 0.;
+    style.xmax = 300.;
+    style.xtitle = "p_{T}(fwd jet1) [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_fwdjet2pt")) {
+    style.nbins = 30;
+    style.xmin = 0.;
+    style.xmax = 300.;
+    style.xtitle = "p_{T}(fwd jet2) [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_bjet1pt")) {
+    style.nbins = 50;
+    style.xmin = 0.;
+    style.xmax = 500.;
     style.xtitle = "p_{T}(bjet1) [GeV]";
     style.log = true;
   } else if (matchHistName(histString,"h_bjet2pt")) {
@@ -449,6 +558,30 @@ histStyle getHistStyle( const char* hist ) {
     style.xmax = 300.;
     style.xtitle = "p_{T}(bjet2) [GeV]";
     style.log = true;
+  } else if (matchHistName(histString,"h_bjet3pt")) {
+    style.nbins = 30;
+    style.xmin = 0.;
+    style.xmax = 300.;
+    style.xtitle = "p_{T}(bjet3) [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_jet1eta")) {
+    style.nbins = 25;
+    style.xmin = -2.5;
+    style.xmax = 2.5;
+    style.xtitle = "#eta(jet1)";
+    style.log = false;
+  } else if (matchHistName(histString,"h_jet2eta")) {
+    style.nbins = 25;
+    style.xmin = -2.5;
+    style.xmax = 2.5;
+    style.xtitle = "#eta(jet2)";
+    style.log = false;
+  } else if (matchHistName(histString,"h_jet3eta")) {
+    style.nbins = 25;
+    style.xmin = -2.5;
+    style.xmax = 2.5;
+    style.xtitle = "#eta(jet3)";
+    style.log = false;
   } else if (matchHistName(histString,"h_bjet1eta")) {
     style.nbins = 25;
     style.xmin = -2.5;
@@ -461,6 +594,60 @@ histStyle getHistStyle( const char* hist ) {
     style.xmax = 2.5;
     style.xtitle = "#eta(bjet2)";
     style.log = false;
+  } else if (matchHistName(histString,"h_bjet3eta")) {
+    style.nbins = 25;
+    style.xmin = -2.5;
+    style.xmax = 2.5;
+    style.xtitle = "#eta(bjet3)";
+    style.log = false;
+  } else if (matchHistName(histString,"h_bjet1eta_lowpt")) {
+    style.nbins = 25;
+    style.xmin = -2.5;
+    style.xmax = 2.5;
+    style.xtitle = "#eta(bjet1)";
+    style.log = false;
+  } else if (matchHistName(histString,"h_bjet2eta_lowpt")) {
+    style.nbins = 25;
+    style.xmin = -2.5;
+    style.xmax = 2.5;
+    style.xtitle = "#eta(bjet2)";
+    style.log = false;
+  } else if (matchHistName(histString,"h_bjet1eta_highpt")) {
+    style.nbins = 25;
+    style.xmin = -2.5;
+    style.xmax = 2.5;
+    style.xtitle = "#eta(bjet1)";
+    style.log = false;
+  } else if (matchHistName(histString,"h_bjet2eta_highpt")) {
+    style.nbins = 25;
+    style.xmin = -2.5;
+    style.xmax = 2.5;
+    style.xtitle = "#eta(bjet2)";
+    style.log = false;
+  } else if (matchHistName(histString,"h_fwdjet1eta")) {
+    style.nbins = 25;
+    style.xmin = -5.0;
+    style.xmax = 5.0;
+    style.xtitle = "#eta(fwd jet1)";
+    style.log = false;
+  } else if (matchHistName(histString,"h_fwdjet2eta")) {
+    style.nbins = 25;
+    style.xmin = -5.0;
+    style.xmax = 5.0;
+    style.xtitle = "#eta(fwd jet2)";
+    style.log = false;
+  } else if (matchHistName(histString,"h_fwdjet1pumva")) {
+    style.nbins = 25;
+    style.xmin = -1.0;
+    style.xmax = 1.0;
+    style.xtitle = "PU MVA(fwd jet1)";
+    style.log = false;
+  } else if (matchHistName(histString,"h_fwdjet2pumva")) {
+    style.nbins = 25;
+    style.xmin = -1.0;
+    style.xmax = 1.0;
+    style.xtitle = "PU MVA(fwdjet2)";
+    style.log = false;
   } else if (matchHistName(histString,"h_bbpt")) {
     style.nbins = 20;
     style.xmin = 0.;
@@ -468,22 +655,81 @@ histStyle getHistStyle( const char* hist ) {
     style.xtitle = "p_{T}(b#bar{b}) [GeV]";
     style.log = true;
   } else if (matchHistName(histString,"h_bbmass")) {
-    style.nbins = 50;
+    // style.nbins = 50;
+    // style.xmin = 0.;
+    // style.xmax = 1000.;
+    // style.xtitle = "M(b#bar{b}) [GeV]";
+    // style.log = true;
+    style.nbins = 25;
     style.xmin = 0.;
-    style.xmax = 1000.;
+    style.xmax = 500.;
     style.xtitle = "M(b#bar{b}) [GeV]";
-    style.log = true;
+    style.log = false;
   } else if (matchHistName(histString,"h_bbdr")) {
-    style.nbins = 50;
+    style.nbins = 20;
     style.xmin = 0.0;
     style.xmax = 2*TMath::Pi();
     style.xtitle = "#DeltaR(b#bar{b})";
     style.log = false;
   } else if (matchHistName(histString,"h_bbdphi")) {
-    style.nbins = 50;
+    style.nbins = 20;
+    style.xmin = 0.0;
+    style.xmax = TMath::Pi();
+    style.xtitle = "#Delta#phi(b#bar{b})";
+    style.log = false;
+  } else if (matchHistName(histString,"h_bbdeta")) {
+    style.nbins = 20;
+    style.xmin = -6.;
+    style.xmax = 6.;
+    style.xtitle = "#Delta#eta(b#bar{b})";
+    style.log = false;
+  } else if (matchHistName(histString,"h_bbdr_lowpt")) {
+    style.nbins = 20;
     style.xmin = 0.0;
     style.xmax = 2*TMath::Pi();
-    style.xtitle = "#Delta#phi(b#bar{b})";
+    style.xtitle = "#DeltaR(b#bar{b})";
+    style.log = false;
+  } else if (matchHistName(histString,"h_bbdeta_lowpt")) {
+    style.nbins = 20;
+    style.xmin = -6.;
+    style.xmax = 6.;
+    style.xtitle = "#Delta#eta(b#bar{b})";
+    style.log = false;
+  } else if (matchHistName(histString,"h_bbdr_highpt")) {
+    style.nbins = 20;
+    style.xmin = 0.0;
+    style.xmax = 2*TMath::Pi();
+    style.xtitle = "#DeltaR(b#bar{b})";
+    style.log = false;
+  } else if (matchHistName(histString,"h_bbdeta_highpt")) {
+    style.nbins = 20;
+    style.xmin = -6.;
+    style.xmax = 6.;
+    style.xtitle = "#Delta#eta(b#bar{b})";
+    style.log = false;
+  } else if (matchHistName(histString,"h_jjdr")) {
+    style.nbins = 20;
+    style.xmin = 0.0;
+    style.xmax = 2*TMath::Pi();
+    style.xtitle = "#DeltaR(jet1,jet2)";
+    style.log = false;
+  } else if (matchHistName(histString,"h_jjdphi")) {
+    style.nbins = 20;
+    style.xmin = 0.0;
+    style.xmax = TMath::Pi();
+    style.xtitle = "#Delta#phi(jet1,jet2)";
+    style.log = false;
+  } else if (matchHistName(histString,"h_lep1bjet1dr")) {
+    style.nbins = 20;
+    style.xmin = 0.0;
+    style.xmax = 2*TMath::Pi();
+    style.xtitle = "#DeltaR(lep1,bjet1)";
+    style.log = false;
+  } else if (matchHistName(histString,"h_lep1bjet2dr")) {
+    style.nbins = 20;
+    style.xmin = 0.0;
+    style.xmax = 2*TMath::Pi();
+    style.xtitle = "#DeltaR(lep1,bjet2)";
     style.log = false;
   } else if (matchHistName(histString,"h_wpt")) {
     style.nbins = 20;
@@ -491,11 +737,74 @@ histStyle getHistStyle( const char* hist ) {
     style.xmax = 500.;
     style.xtitle = "p_{T}(W) [GeV]";
     style.log = true;
+  } else if (matchHistName(histString,"h_met")) {
+    // style.nbins = 60;
+    // style.xmin = 0.;
+    // style.xmax = 300.;
+    style.nbins = 20;
+    style.xmin = 0.;
+    style.xmax = 500.;
+    style.xtitle = "type 1 phi cor pf MET [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_ljetspt")) {
+    style.nbins = 20;
+    style.xmin = 0.;
+    style.xmax = 500.;
+    style.xtitle = "p_{T}(l+jets) [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_lbbpt")) {
+    style.nbins = 20;
+    style.xmin = 0.;
+    style.xmax = 500.;
+    style.xtitle = "p_{T}(lbb) [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_simplemetlbb")) {
+    style.nbins = 20;
+    style.xmin = 0.;
+    style.xmax = 500.;
+    style.xtitle = "p_{T}(lbb) [GeV]";
+    style.log = true;
   } else if (matchHistName(histString,"h_pfmet")) {
     style.nbins = 20;
     style.xmin = 0.;
     style.xmax = 500.;
-    style.xtitle = "pf MET [GeV]";
+    style.xtitle = "pf MET, uncorrected [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_trkmet")) {
+    style.nbins = 20;
+    style.xmin = 0.;
+    style.xmax = 500.;
+    style.xtitle = "track MET [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_met_soft")) {
+    style.nbins = 20;
+    style.xmin = 0.;
+    style.xmax = 500.;
+    style.xtitle = "pf MET, soft terms [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_t1met10")) {
+    style.nbins = 20;
+    style.xmin = 0.;
+    style.xmax = 500.;
+    style.xtitle = "type 1 pf MET [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_sumet")) {
+    style.nbins = 60;
+    style.xmin = 0.;
+    style.xmax = 3000.;
+    style.xtitle = "type1 pf sum E_{T} [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_sumet_soft")) {
+    style.nbins = 60;
+    style.xmin = 0.;
+    style.xmax = 3000.;
+    style.xtitle = "pf sum E_{T}, soft terms [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_metsig")) {
+    style.nbins = 30;
+    style.xmin = 0.;
+    style.xmax = 15.;
+    style.xtitle = "pf MET / #sqrt{sum E_{T}}";
     style.log = true;
   } else if (matchHistName(histString,"h_njets")) {
     style.nbins = 8;
@@ -692,6 +1001,12 @@ histStyle getHistStyle( const char* hist ) {
     style.xmax = 2*TMath::Pi();
     style.xtitle = "#Delta#phi(true ttbar, non-btagged jet vec sum)";
     style.log = false;
+  } else if (matchHistName(histString,"h_rhovor")) {
+    style.nbins = 80;
+    style.xmin = 0.;
+    style.xmax = 40;
+    style.xtitle = "#rho [GeV/unit area]";
+    style.log = true;
   } else if (matchHistName(histString,"h_nvtx")) {
     style.nbins = 40;
     style.xmin = 0.;
@@ -740,6 +1055,12 @@ histStyle getHistStyle( const char* hist ) {
     style.xmax = TMath::Pi();
     style.xtitle = "#Delta#phi(lep,pseudo MET)";
     style.log = false;
+  } else if (matchHistName(histString,"h_lep1isotrkdphi")) {
+    style.nbins = 10;
+    style.xmin = 0.0;
+    style.xmax = TMath::Pi();
+    style.xtitle = "#Delta#phi(lep1,iso track)";
+    style.log = false;
   } else if (matchHistName(histString,"h_jet1csv")) {
     style.nbins = 20;
     style.xmin = 0.0;
@@ -751,6 +1072,30 @@ histStyle getHistStyle( const char* hist ) {
     style.xmin = 0.0;
     style.xmax = 1.0;
     style.xtitle = "CSV(jet2)";
+    style.log = false;
+  } else if (matchHistName(histString,"h_pfmetcalometdphi_met100")) {
+    style.nbins = 10;
+    style.xmin = 0.0;
+    style.xmax = TMath::Pi();
+    style.xtitle = "#Delta#phi(pf MET, calo MET), MET > 100";
+    style.log = true;
+  } else if (matchHistName(histString,"h_pfmetcalometdphi_met150")) {
+    style.nbins = 10;
+    style.xmin = 0.0;
+    style.xmax = TMath::Pi();
+    style.xtitle = "#Delta#phi(pf MET, calo MET), MET > 150";
+    style.log = true;
+  } else if (matchHistName(histString,"h_pfmetcalometdphi_met175")) {
+    style.nbins = 10;
+    style.xmin = 0.0;
+    style.xmax = TMath::Pi();
+    style.xtitle = "#Delta#phi(pf MET, calo MET), MET > 175";
+    style.log = true;
+  } else if (matchHistName(histString,"h_passtauveto")) {
+    style.nbins = 2;
+    style.xmin = 0.;
+    style.xmax = 2.;
+    style.xtitle = "pass tau veto";
     style.log = false;
 
   } else {
@@ -767,11 +1112,15 @@ bool matchHistName(const TString& histname, const TString& matchname) {
 
   // otherwise check for a name match with a channel suffix
   if (histname.Contains(matchname)) {
-    if (histname.EndsWith("_e")) return true;
-    if (histname.EndsWith("_m")) return true;
-    if (histname.EndsWith("_ee")) return true;
-    if (histname.EndsWith("_mm")) return true;
-    if (histname.EndsWith("_em")) return true;
+    TString suffix = histname;
+    suffix.ReplaceAll(matchname,"");
+    if (suffix.EqualTo("_e")) return true;
+    if (suffix.EqualTo("_m")) return true;
+    if (suffix.EqualTo("_ee")) return true;
+    if (suffix.EqualTo("_mm")) return true;
+    if (suffix.EqualTo("_em")) return true;
+    if (suffix.EqualTo("_lowpu")) return true;
+    if (suffix.EqualTo("_highpu")) return true;
   }
 
   return false;
