@@ -52,7 +52,7 @@ void initialize( const char* path, bool doData = true, int doSig = 0 );
 // TGraphErrors* stackHistAuto( const char* path, const char* hist, const char* flavor, const char* dir, bool doData = true, 
 //                              int rebin = 1, bool normalize = false, float mcnorm = -1. );
 TCanvas* stackHistAuto( const char* path, const char* hist, const char* flavor, const char* dir, bool doData = true, 
-			int rebin = 1, bool normalize = false, float mcnorm = -1., int doSig = 0 );
+			int rebin = 1, bool normalize = false, float mcnorm = -1., int doSig = 0 , const char* scalesample = "");
 void printYieldsDir( const char* path, const char* dir, bool doData, int latex = 0, int doSig = 9 );
 void saveAllHists( const char* path, const char* dir, const char* flavor, const char* outpath, bool doData, int rebin = 1, bool normalize = false, float mcnorm = -1. );
 bool matchHistName(const TString& histname, const TString& matchname);

@@ -88,10 +88,10 @@ void print( TH1F* h , string label , bool dilep, bool correlatedError ){
       sem  << Form( "%.0f" , h->GetBinContent(3) );
       stot << Form( "%.0f" , h->GetBinContent(4)       );
     } else if( label == "data/MC" ){
-      see  << Form( "%.2f" , h->GetBinContent(1) );
-      smm  << Form( "%.2f" , h->GetBinContent(2) );
-      sem  << Form( "%.2f" , h->GetBinContent(3) );
-      stot << Form( "%.2f" , h->GetBinContent(4)       );
+      see  << Form( "%.2f" , h->GetBinContent(1) ) << pm << Form( "%.2f" , h->GetBinError(1) );
+      smm  << Form( "%.2f" , h->GetBinContent(2) ) << pm << Form( "%.2f" , h->GetBinError(2) );
+      sem  << Form( "%.2f" , h->GetBinContent(3) ) << pm << Form( "%.2f" , h->GetBinError(3) );
+      stot << Form( "%.2f" , h->GetBinContent(4) ) << pm << Form( "%.2f" , h->GetBinError(4) );
     }else{
       see  << Form( "%.1f" , h->GetBinContent(1) ) << pm << Form( "%.1f" , h->GetBinError(1) );
       smm  << Form( "%.1f" , h->GetBinContent(2) ) << pm << Form( "%.1f" , h->GetBinError(2) );
@@ -118,18 +118,18 @@ void print( TH1F* h , string label , bool dilep, bool correlatedError ){
       sm  << Form( "%.0f" , h->GetBinContent(2) );
       stot << Form( "%.0f" , h->GetBinContent(3)       );
     } else if( label == "data/MC" ){
-      se  << Form( "%.2f" , h->GetBinContent(1) );
-      sm  << Form( "%.2f" , h->GetBinContent(2) );
-      stot << Form( "%.2f" , h->GetBinContent(3)       );
+      se  << Form( "%.2f" , h->GetBinContent(1) ) << pm << Form( "%.2f" , h->GetBinError(1) );
+      sm  << Form( "%.2f" , h->GetBinContent(2) ) << pm << Form( "%.2f" , h->GetBinError(2) );
+      stot << Form( "%.2f" , h->GetBinContent(3) ) << pm << Form( "%.2f" , h->GetBinError(3) );
     }else{
-      se  << Form( "%.1f" , h->GetBinContent(1) ) << pm << Form( "%.1f" , h->GetBinError(1) );
-      sm  << Form( "%.1f" , h->GetBinContent(2) ) << pm << Form( "%.1f" , h->GetBinError(2) );
+      se  << Form( "%.2f" , h->GetBinContent(1) ) << pm << Form( "%.2f" , h->GetBinError(1) );
+      sm  << Form( "%.2f" , h->GetBinContent(2) ) << pm << Form( "%.2f" , h->GetBinError(2) );
     
       float error = 0;
       if( correlatedError ) error = h->GetBinError(1) + h->GetBinError(2);
       else                  error = h->GetBinError(3);
     
-      stot << Form( "%.1f" , h->GetBinContent(3)       ) << pm << Form( "%.1f" , error  );
+      stot << Form( "%.2f" , h->GetBinContent(3)       ) << pm << Form( "%.2f" , error  );
     }
 
     cout << delimstart << setw(width1) << label      << setw(width2)
@@ -309,6 +309,117 @@ void fillYieldHist( TH1F* hin, TH1F* hyield, int bin ) {
 
 }
 
+void printCutflow( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , vector<char*> dirs , bool doData, bool splitMC, int latex ){
+
+  initSymbols( latex );
+
+  std::vector<TString> bg_labels;
+  std::vector<TFile*> bg_files;
+  std::vector<TString> sig_labels;
+  std::vector<TFile*> sig_files;
+
+  assert(mcfiles.size() == labels.size());
+
+  // loop through mc files and separate into signals and bgs
+  for(unsigned int imc = 0 ; imc < mcfiles.size() ; ++imc) {
+    TString label = TString(labels[imc]);
+    if( label.Contains("TChi") ) {
+      sig_labels.push_back(label);
+      sig_files.push_back(mcfiles[imc]);
+    } else {
+      bg_labels.push_back(label);
+      bg_files.push_back(mcfiles[imc]);
+    }
+  }
+
+  // h_events:
+  //  bin 1: unweighted event yield
+  //  bin 2: weighted event yield
+  TString histname = "h_events";
+
+  printLine(latex);
+  // header info
+  cout << delimstart << setw(width1) << "Selection"    << setw(width2);
+  if (splitMC) {
+    for(unsigned int ibg = 0 ; ibg < bg_labels.size() ; ++ibg){
+      cout << delim      << setw(width1) << bg_labels[ibg]    << setw(width2);
+    }
+  }
+  cout << delim      << setw(width1) << "MC Total"     << setw(width2);
+  if (doData) cout << delim      << setw(width1) << "Data"          << setw(width2)
+		   << delim      << setw(width1) << "Data/MC"          << setw(width2);
+  // print signals here
+  for(unsigned int isig = 0 ; isig < sig_labels.size() ; ++isig){
+    cout << delim      << setw(width1) << sig_labels[isig]    << setw(width2);
+  }
+  cout << delimend   << endl;
+  printLine(latex);
+
+  // loop over dirs, print counts for each
+  for (unsigned int idir = 0; idir < dirs.size(); ++idir) {
+    TString histname_dir = histname;
+    if (!TString(dirs[idir]).Length() == 0) histname_dir = Form("%s/",dirs[idir]) + histname;
+    float nmc_tot = 0.;
+    float errmc_tot = 0.;
+
+    cout << delimstart << setw(width1) << dirs[idir]  << setw(width2);
+    // loop over backgrounds
+    for(unsigned int ibg = 0 ; ibg < bg_labels.size() ; ++ibg){
+      TH1F* mchist = (TH1F*)bg_files[ibg]->Get(histname_dir.Data());
+      float nmc = 0.;
+      float errmc = 0.;
+      if (mchist) {
+	float nmc = mchist->GetBinContent(2);
+	float errmc = mchist->GetBinError(2);
+	nmc_tot += nmc;
+	errmc_tot += pow(errmc,2);
+      }
+
+      if (splitMC) {
+	cout << delim      << setw(width1) << Form( "%.1f" , nmc ) << pm << Form( "%.1f" , errmc )  << setw(width2);
+      }
+    } // loop over backgrounds
+    errmc_tot = sqrt(errmc_tot);
+
+    cout << delim      << setw(width1) << Form( "%.1f" , nmc_tot ) << pm << Form( "%.1f" , errmc_tot )      << setw(width2);
+
+    if (doData) {
+      TH1F* datahist = (TH1F*)datafile->Get(histname_dir.Data());
+      float ndata = 0.;
+      float errdata = 0.;
+      float dataovermc = 0.;
+      float errdataovermc = 0.;
+
+      if (datahist) {
+	ndata = datahist->GetBinContent(2);
+	errdata = datahist->GetBinError(2);
+
+	if (nmc_tot > 0.) {
+	  dataovermc = ndata/nmc_tot;
+	  if (ndata > 0.) {
+	    errdataovermc = err_mult(ndata,nmc_tot,errdata,errmc_tot,dataovermc);
+	  }
+	}
+      }
+
+      cout << delim      << setw(width1) << Form("%d",int(ndata))  << setw(width2)
+	   << delim      << setw(width1) << Form("%.2f",dataovermc) << pm << Form("%.2f", errdataovermc )  << setw(width2);
+    }
+    // print signals here
+    for(unsigned int isig = 0 ; isig < sig_labels.size() ; ++isig){
+      TH1F* mchist = (TH1F*)sig_files[isig]->Get(histname_dir.Data());
+      float nmc = mchist->GetBinContent(2);
+      float errmc = mchist->GetBinError(2);
+      cout << delim      << setw(width1) << Form( "%.1f" , nmc ) << pm << Form( "%.1f" , errmc )  << setw(width2);
+    }
+    cout << delimend   << endl;
+
+  } // loop over dirs
+
+  printLine(latex);
+
+}
+
 
 
 #include <TList.h>
@@ -418,6 +529,8 @@ TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1,
     if( strcmp("t",t)       == 0 ) t = "single top";
     if( strcmp("single_top",t)       == 0 ) t = "single top";
     if( strcmp("wjets",t)   == 0 ) t = "W+jets";
+    if( strcmp("wlight",t)   == 0 ) t = "W+light jets";
+    if( strcmp("wbb",t)   == 0 ) t = "W+b#bar{b}";
     if( strcmp("zjets",t)   == 0 ) t = "Z+jets";
     if( strcmp("ww",t)      == 0 ) t = "WW";
     if( strcmp("wz",t)      == 0 ) t = "WZ";
@@ -475,7 +588,7 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
                     const char* flavor , const char* dir ,
 		    int nbins ,  float xmin , float xmax ,  
 		    const char* xtitle , bool overlayData , bool residual , bool drawLegend , bool log , 
-			     bool normalize , bool fit, float mcnorm ){
+			     bool normalize , bool fit, float mcnorm, const char* scalesample ){
 
   dataMCHists datamchists;
   TH1F* ratio = 0;
@@ -565,11 +678,15 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     cout << "data yield " << ndata << endl;
   }
 
+  //  TString scalesample = "all";
+  TString tscalesample = TString(scalesample);
+  if (tscalesample.Length() == 0) tscalesample = "all";
+
   float SF = ndata/nmctot;
   if( normalize ){
     cout << "Data, MC, SF " << ndata << ", " << nmctot << ", " << SF << endl;
-    if (mcnorm < 0.) cout << "Scaling MC by " << SF << "!!!!!!" << endl;
-    else cout << "Scaling MC by input factor of " << mcnorm << "!!!!!!" << endl;
+    if (mcnorm < 0.) cout << "Scaling MC: " << tscalesample << " by " << SF << "!!!!!!" << endl;
+    else cout << "Scaling MC: " << tscalesample << " by input factor of " << mcnorm << "!!!!!!" << endl;
   }
 
   int nmcsig = 0;
@@ -595,7 +712,7 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     mchist[imc]->SetBinContent(nbins,lastbin_and_overflow);
     mchist[imc]->SetBinError(nbins,err);
 
-    if( normalize ) {
+    if( normalize && ( tscalesample.EqualTo("all") || tscalesample.EqualTo(labels[imc]) ) ) {
       if (mcnorm < 0.) mchist[imc]->Scale(SF);
       else mchist[imc]->Scale(mcnorm);
     }
@@ -796,7 +913,7 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     gratio->SetLineColor(kBlack);
     gratio->SetMarkerColor(kBlack);
     gratio->SetMarkerStyle(20);
-    gratio->Draw("psame");
+    gratio->Draw("p0same");
 
     TLine line;
     line.SetLineWidth(1);
@@ -940,27 +1057,31 @@ TGraphAsymmErrors* makeBand(TGraphErrors* centgraph, TGraphErrors* upgraph, TGra
 // }
 
 //____________________________________________________________________________
-TCanvas* compareNormalized(std::string histname, TFile* f1, std::string label1, TFile* f2, std::string label2, int rebin, bool norm, TFile* f3, std::string label3) {
+TCanvas* compareNormalized(std::string histname, TFile* f1, std::string label1, TFile* f2, std::string label2, int rebin, bool norm, TFile* f3, std::string label3, TFile* f4, std::string label4) {
 
   TH1F* h1 = (TH1F*)f1->Get(histname.c_str());
   TH1F* h2 = (TH1F*)f2->Get(histname.c_str());
   TH1F* h3 = 0;
+  TH1F* h4 = 0;
   if (f3) h3 = (TH1F*)f3->Get(histname.c_str());
+  if (f4) h4 = (TH1F*)f4->Get(histname.c_str());
 
-  TCanvas* c = compareNormalized(h1,label1,h2,label2,rebin,norm,h3,label3);
+  TCanvas* c = compareNormalized(h1,label1,h2,label2,rebin,norm,h3,label3,h4,label4);
 
   return c;
 }
 
 //____________________________________________________________________________
-TCanvas* compareNormalized(TH1F* h1, std::string label1, TH1F* h2, std::string label2, int rebin, bool norm, TH1F* h3, std::string label3) {
+TCanvas* compareNormalized(TH1F* h1, std::string label1, TH1F* h2, std::string label2, int rebin, bool norm, TH1F* h3, std::string label3, TH1F* h4, std::string label4) {
 
   TCanvas* c = new TCanvas(Form("c_%s",h1->GetName()),Form("c_%s",h1->GetName()));
 
   TH1F* h1_clone = (TH1F*)h1->Clone(Form("%s_clone",h1->GetName()));
   TH1F* h2_clone = (TH1F*)h2->Clone(Form("%s_clone",h2->GetName()));
   TH1F* h3_clone = 0;
+  TH1F* h4_clone = 0;
   if (h3) h3_clone = (TH1F*)h3->Clone(Form("%s_clone",h3->GetName()));
+  if (h4) h4_clone = (TH1F*)h4->Clone(Form("%s_clone",h4->GetName()));
 
   h1_clone->SetMarkerColor(kBlue);
   h1_clone->SetLineColor(kBlue);
@@ -973,28 +1094,38 @@ TCanvas* compareNormalized(TH1F* h1, std::string label1, TH1F* h2, std::string l
     h3_clone->SetLineColor(7);
     h3_clone->SetLineWidth(2);
   }
+  if (h4_clone) {
+    h4_clone->SetMarkerColor(8);
+    h4_clone->SetLineColor(8);
+    h4_clone->SetLineWidth(2);
+  }
 
   if (rebin > 1) {
     h1_clone->Rebin(rebin);
     if (h3_clone) h3_clone->Rebin(rebin);
+    if (h4_clone) h4_clone->Rebin(rebin);
     h2_clone->Rebin(rebin);
   }
 
   TH1F* h1_norm = 0;
   TH1F* h2_norm = 0;
   TH1F* h3_norm = 0;
+  TH1F* h4_norm = 0;
 
   if (norm) {
     h1_norm = (TH1F*)h1_clone->DrawNormalized("histe");
     h2_norm = (TH1F*)h2_clone->DrawNormalized("histe same");
     if (h3_clone) h3_norm = (TH1F*)h3_clone->DrawNormalized("histe same");
+    if (h4_clone) h4_norm = (TH1F*)h4_clone->DrawNormalized("histe same");
   } else {
     h1_norm = h1_clone;
     h2_norm = h2_clone;
     if (h3_clone) h3_norm = h3_clone;
+    if (h3_clone) h3_norm = h3_clone;
     h1_norm->Draw("histe");
     h2_norm->Draw("histe same");
     if (h3_clone) h3_norm->Draw("histe same");
+    if (h4_clone) h4_norm->Draw("histe same");
   }
 
   if (h2_norm->GetMaximum() > h1_norm->GetMaximum()) {
@@ -1005,11 +1136,16 @@ TCanvas* compareNormalized(TH1F* h1, std::string label1, TH1F* h2, std::string l
     h1_norm->GetYaxis()->SetRangeUser(1E-4,1.1*h3_norm->GetMaximum());
   }
 
+  if (h4_norm && (h4_norm->GetMaximum() > h1_norm->GetMaximum())) {
+    h1_norm->GetYaxis()->SetRangeUser(1E-4,1.1*h4_norm->GetMaximum());
+  }
+
   TLegend *leg = new TLegend(0.66,0.77,0.93,0.9);
   leg->SetFillColor(0);
   leg->AddEntry(h1_norm,label1.c_str(),"l");
   leg->AddEntry(h2_norm,label2.c_str(),"l");
   if (h3_norm) leg->AddEntry(h3_norm,label3.c_str(),"l");
+  if (h4_norm) leg->AddEntry(h4_norm,label4.c_str(),"l");
   leg->Draw("same");
 
   gPad->Modified();
@@ -1157,3 +1293,38 @@ TLegend* legendize(TCanvas* c, const TString& opt, const TString& label1, const 
 
   return l;
 }
+
+//______________________________________________________________________________
+// returns the error on C = A*B (or C = A/B)
+float err_mult(float A, float B, float errA, float errB, float C) {
+  return sqrt(C*C*(pow(errA/A,2) + pow(errB/B,2)));
+}
+
+//______________________________________________________________________________
+// integrates MET above various values and makes graph
+TGraphErrors* makeMETGraph(TH1F* hdata, TH1F* hmc, float xoffset) {
+
+  const int ncuts = 4;
+  const float vals[ncuts] = {50.,100.,150.,175.};
+  const bool print = true;
+
+  TGraphErrors* g = new TGraphErrors(ncuts);
+
+  for (int i = 0; i < ncuts; ++i) {
+    Double_t err_data = 0;
+    Double_t err_mc = 0;
+    float n_data = hdata->IntegralAndError(vals[i],-1,err_data);
+    float n_mc = hmc->IntegralAndError(vals[i],-1,err_mc);
+    float ratio = n_data/n_mc;
+    float err = err_mult(n_data,n_mc,err_data,err_mc,ratio);
+    g->SetPoint(i, i+0.5+xoffset, ratio);
+    g->SetPointError(i, 0., err);
+    if (print) {
+      std::cout << "MET " << vals[i] << ": MC, data, ratio: " << Form("%.1f",n_mc) << " $\\pm$ " << Form("%.1f",err_mc)
+		<< " & " << n_data << " & " << Form("%.2f",ratio) << " $\\pm$ " << Form("%.2f",err) << std::endl;
+    }
+  }
+
+  return g;
+}
+
