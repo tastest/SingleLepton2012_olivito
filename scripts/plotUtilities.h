@@ -30,10 +30,15 @@ void initSymbols(int latex);
 void  printLine(int latex);
 void printHeader(bool dilep = false);
 void print( TH1F* h , string label , bool dilep = false, bool correlatedError = false );
-void printYields( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , const char* dir , bool doData, int latex = 0 );
-void fillYieldHist( TH1F* hin, TH1F* hyield, int bin );
-void printCutflow( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , vector<char*> dirs , bool doData, bool splitMC = false, int latex = 0 );
+void printYields( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , const char* dir , bool doData, int latex = 0, bool doWeighted = true );
+void fillYieldHist( TH1F* hin, TH1F* hyield, int bin, bool doWeighted = true );
+void printCutflow( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , vector<char*> dirs , bool doData, bool splitMC = false, int latex = 0, bool doWeighted = true );
+void printSigRegions( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , vector<char*> dirs , bool doData, int latex = 0, bool doWeighted = true );
+float getSystError( const TString sample );
+std::string getTableName( const TString sample, int latex = 0 );
+
 //void deleteHistos();
+int getColor(const TString sample);
 TLegend *getLegend( vector<char*> labels , bool overlayData, 
 		    float x1 = 0.7, float y1 = 0.45 , float x2 = 0.87 , float y2 = 0.94 );
 
@@ -60,6 +65,7 @@ char* em;
 char* e;         
 char* m;         
 
+int   startwidth;
 int   width1;
 int   width2;
 int   linelength;

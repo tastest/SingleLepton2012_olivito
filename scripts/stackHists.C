@@ -25,6 +25,7 @@ void initialize( const char* path, bool doData, int doSig ) {
 
     if (doData && data_) data_->Close();
     wjets_->Close();
+    wjetsdd_->Close();
     wbb_->Close();
     zjets_->Close();
     //    tt_->Close();
@@ -37,6 +38,8 @@ void initialize( const char* path, bool doData, int doSig ) {
     vvv_->Close();
     rare_->Close();
     whbb_->Close();
+    diltop_->Close();
+    lepb_->Close();
 
     if (doSig > 0) {
       TChiwh_250_1_->Close();
@@ -48,9 +51,11 @@ void initialize( const char* path, bool doData, int doSig ) {
       TChiwh_300_1_->Close();
     }
     if (doSig > 3) {
+      TChiwh_130_1_->Close();
       TChiwh_150_1_->Close();
-      TChiwh_250_25_->Close();
-      TChiwh_250_50_->Close();
+      TChiwh_175_1_->Close();
+      // TChiwh_250_25_->Close();
+      // TChiwh_250_50_->Close();
       TChiwh_350_1_->Close();
     }
 
@@ -65,6 +70,7 @@ void initialize( const char* path, bool doData, int doSig ) {
   if (doData) data_ = new TFile(Form("%s/data_histos.root",path));
   // wjets_ = new TFile(Form("%s/wjets_histos.root",path));
   wjets_ = new TFile(Form("%s/wjets_nobb_histos.root",path));
+  wjetsdd_ = new TFile(Form("%s/wlight_dd_histos.root",path));
   // wjets_ = new TFile(Form("%s/wjets_comb_histos.root",path));
   //  wbb_ = new TFile(Form("%s/wjets_onlybb_histos.root",path));
   wbb_ = new TFile(Form("%s/wbb_histos.root",path));
@@ -82,34 +88,71 @@ void initialize( const char* path, bool doData, int doSig ) {
   ttV_ = new TFile(Form("%s/ttV_histos.root",path));
   vvv_ = new TFile(Form("%s/VVV_histos.root",path));
   rare_ = new TFile(Form("%s/rare_histos.root",path));
+  rareall_ = new TFile(Form("%s/rare_all_histos.root",path));
   whbb_ = new TFile(Form("%s/whbb_histos.root",path));
+  diltop_ = new TFile(Form("%s/diltop_histos.root",path));
+  lepb_ = new TFile(Form("%s/bg_1lb_histos.root",path));
+  top1l_ = new TFile(Form("%s/top1l_histos.root",path));
+
+  // if (doSig > 0) {
+  //   TChiwh_250_1_ = new TFile(Form("%s/TChiwh_250_1_histos.root",path));
+  // }
+  // if (doSig > 1) {
+  //   TChiwh_200_1_ = new TFile(Form("%s/TChiwh_200_1_histos.root",path));
+  // }
+  // if (doSig > 2) {
+  //   TChiwh_300_1_ = new TFile(Form("%s/TChiwh_300_1_histos.root",path));
+  // }
+  // if (doSig > 3) {
+  //   TChiwh_150_1_ = new TFile(Form("%s/TChiwh_150_1_histos.root",path));
+  //   TChiwh_250_25_ = new TFile(Form("%s/TChiwh_250_25_histos.root",path));
+  //   TChiwh_250_50_ = new TFile(Form("%s/TChiwh_250_50_histos.root",path));
+  //   TChiwh_350_1_ = new TFile(Form("%s/TChiwh_350_1_histos.root",path));
+  // }
 
   if (doSig > 0) {
-    TChiwh_250_1_ = new TFile(Form("%s/TChiwh_250_1_histos.root",path));
+    TChiwh_250_1_ = new TFile(Form("%s/Wino_250_1_histos.root",path));
   }
   if (doSig > 1) {
-    TChiwh_200_1_ = new TFile(Form("%s/TChiwh_200_1_histos.root",path));
+    TChiwh_200_1_ = new TFile(Form("%s/Wino_200_1_histos.root",path));
   }
   if (doSig > 2) {
-    TChiwh_300_1_ = new TFile(Form("%s/TChiwh_300_1_histos.root",path));
+    TChiwh_300_1_ = new TFile(Form("%s/Wino_300_1_histos.root",path));
   }
   if (doSig > 3) {
-    TChiwh_150_1_ = new TFile(Form("%s/TChiwh_150_1_histos.root",path));
-    TChiwh_250_25_ = new TFile(Form("%s/TChiwh_250_25_histos.root",path));
-    TChiwh_250_50_ = new TFile(Form("%s/TChiwh_250_50_histos.root",path));
-    TChiwh_350_1_ = new TFile(Form("%s/TChiwh_350_1_histos.root",path));
+    TChiwh_130_1_ = new TFile(Form("%s/Wino_130_1_histos.root",path));
+    TChiwh_150_1_ = new TFile(Form("%s/Wino_150_1_histos.root",path));
+    TChiwh_175_1_ = new TFile(Form("%s/Wino_175_1_histos.root",path));
+    TChiwh_350_1_ = new TFile(Form("%s/Wino_350_1_histos.root",path));
   }
 
-  //  mcfiles_.push_back(tt_);    mclabels_.push_back("ttbar");
+  // --- control regions, wlight from MC
+  // mcfiles_.push_back(tt2l_);    mclabels_.push_back("ttbar 2l");
+  // mcfiles_.push_back(tt1l_);    mclabels_.push_back("ttbar 1l");
+  // mcfiles_.push_back(wjets_); mclabels_.push_back("wlight");
+  // mcfiles_.push_back(wbb_); mclabels_.push_back("wbb");
+  // mcfiles_.push_back(t1l_);     mclabels_.push_back("single top 1l");
+  // mcfiles_.push_back(t2l_);     mclabels_.push_back("single top 2l");
+  // mcfiles_.push_back(rare_);     mclabels_.push_back("rare");
+  // mcfiles_.push_back(whbb_);     mclabels_.push_back("whbb");
+
+  // --- control regions, wlight from dd
   mcfiles_.push_back(tt2l_);    mclabels_.push_back("ttbar 2l");
   mcfiles_.push_back(tt1l_);    mclabels_.push_back("ttbar 1l");
-  mcfiles_.push_back(wjets_); mclabels_.push_back("wlight");
+  mcfiles_.push_back(wjetsdd_); mclabels_.push_back("wlight");
   mcfiles_.push_back(wbb_); mclabels_.push_back("wbb");
-  // mcfiles_.push_back(t_);     mclabels_.push_back("single top");
   mcfiles_.push_back(t1l_);     mclabels_.push_back("single top 1l");
   mcfiles_.push_back(t2l_);     mclabels_.push_back("single top 2l");
   mcfiles_.push_back(rare_);     mclabels_.push_back("rare");
   mcfiles_.push_back(whbb_);     mclabels_.push_back("whbb");
+
+  // --- signal region, collapsed samples, wlight from dd
+  // mcfiles_.push_back(diltop_);    mclabels_.push_back("dilep top");
+  // mcfiles_.push_back(top1l_);    mclabels_.push_back("top 1l");
+  // mcfiles_.push_back(wbb_);    mclabels_.push_back("wbb");
+  // mcfiles_.push_back(wjetsdd_); mclabels_.push_back("wlight");
+  // //mcfiles_.push_back(wjets_); mclabels_.push_back("wlight");
+  // mcfiles_.push_back(rareall_);     mclabels_.push_back("rare");
 
   //  mcfiles_.push_back(tt0l_);    mclabels_.push_back("ttbar 0l");
   //  mcfiles_.push_back(zjets_); mclabels_.push_back("zjets");
@@ -117,26 +160,48 @@ void initialize( const char* path, bool doData, int doSig ) {
   //  mcfiles_.push_back(ttV_);   mclabels_.push_back("ttV");
   //  mcfiles_.push_back(vvv_);   mclabels_.push_back("VVV");
 
+  // if (doSig == 1) {
+  //   mcfiles_.push_back(TChiwh_250_1_);     mclabels_.push_back("TChiwh_250_1");
+  // }
+  // else if (doSig == 2) {
+  //   mcfiles_.push_back(TChiwh_200_1_);     mclabels_.push_back("TChiwh_200_1");
+  //   mcfiles_.push_back(TChiwh_250_1_);     mclabels_.push_back("TChiwh_250_1");
+  // }
+  // else if (doSig == 3) {
+  //   mcfiles_.push_back(TChiwh_200_1_);     mclabels_.push_back("TChiwh_200_1");
+  //   mcfiles_.push_back(TChiwh_250_1_);     mclabels_.push_back("TChiwh_250_1");
+  //   mcfiles_.push_back(TChiwh_300_1_);     mclabels_.push_back("TChiwh_300_1");
+  // }
+  // else if (doSig > 3) {
+  //   mcfiles_.push_back(TChiwh_150_1_);     mclabels_.push_back("TChiwh_150_1");
+  //   mcfiles_.push_back(TChiwh_200_1_);     mclabels_.push_back("TChiwh_200_1");
+  //   mcfiles_.push_back(TChiwh_250_1_);     mclabels_.push_back("TChiwh_250_1");
+  //   mcfiles_.push_back(TChiwh_250_25_);     mclabels_.push_back("TChiwh_250_25");
+  //   mcfiles_.push_back(TChiwh_250_50_);     mclabels_.push_back("TChiwh_250_50");
+  //   mcfiles_.push_back(TChiwh_300_1_);     mclabels_.push_back("TChiwh_300_1");
+  //   mcfiles_.push_back(TChiwh_350_1_);     mclabels_.push_back("TChiwh_350_1");
+  // }
+
   if (doSig == 1) {
-    mcfiles_.push_back(TChiwh_250_1_);     mclabels_.push_back("TChiwh_250_1");
+    mcfiles_.push_back(TChiwh_250_1_);     mclabels_.push_back("Wino_250_1");
   }
   else if (doSig == 2) {
-    mcfiles_.push_back(TChiwh_200_1_);     mclabels_.push_back("TChiwh_200_1");
-    mcfiles_.push_back(TChiwh_250_1_);     mclabels_.push_back("TChiwh_250_1");
+    mcfiles_.push_back(TChiwh_200_1_);     mclabels_.push_back("Wino_200_1");
+    mcfiles_.push_back(TChiwh_250_1_);     mclabels_.push_back("Wino_250_1");
   }
   else if (doSig == 3) {
-    mcfiles_.push_back(TChiwh_200_1_);     mclabels_.push_back("TChiwh_200_1");
-    mcfiles_.push_back(TChiwh_250_1_);     mclabels_.push_back("TChiwh_250_1");
-    mcfiles_.push_back(TChiwh_300_1_);     mclabels_.push_back("TChiwh_300_1");
+    mcfiles_.push_back(TChiwh_200_1_);     mclabels_.push_back("Wino_200_1");
+    mcfiles_.push_back(TChiwh_250_1_);     mclabels_.push_back("Wino_250_1");
+    mcfiles_.push_back(TChiwh_300_1_);     mclabels_.push_back("Wino_300_1");
   }
   else if (doSig > 3) {
-    mcfiles_.push_back(TChiwh_150_1_);     mclabels_.push_back("TChiwh_150_1");
-    mcfiles_.push_back(TChiwh_200_1_);     mclabels_.push_back("TChiwh_200_1");
-    mcfiles_.push_back(TChiwh_250_1_);     mclabels_.push_back("TChiwh_250_1");
-    mcfiles_.push_back(TChiwh_250_25_);     mclabels_.push_back("TChiwh_250_25");
-    mcfiles_.push_back(TChiwh_250_50_);     mclabels_.push_back("TChiwh_250_50");
-    mcfiles_.push_back(TChiwh_300_1_);     mclabels_.push_back("TChiwh_300_1");
-    mcfiles_.push_back(TChiwh_350_1_);     mclabels_.push_back("TChiwh_350_1");
+    mcfiles_.push_back(TChiwh_130_1_);     mclabels_.push_back("Wino_130_1");
+    mcfiles_.push_back(TChiwh_150_1_);     mclabels_.push_back("Wino_150_1");
+    mcfiles_.push_back(TChiwh_175_1_);     mclabels_.push_back("Wino_175_1");
+    mcfiles_.push_back(TChiwh_200_1_);     mclabels_.push_back("Wino_200_1");
+    mcfiles_.push_back(TChiwh_250_1_);     mclabels_.push_back("Wino_250_1");
+    mcfiles_.push_back(TChiwh_300_1_);     mclabels_.push_back("Wino_300_1");
+    mcfiles_.push_back(TChiwh_350_1_);     mclabels_.push_back("Wino_350_1");
   }
 
   currentPath_ = std::string(path);
@@ -169,12 +234,12 @@ TCanvas* stackHistAuto( const char* path, const char* hist, const char* flavor, 
   return c;
 }
 
-void printYieldsDir( const char* path, const char* dir, bool doData, int latex, int doSig ) {
+void printYieldsDir( const char* path, const char* dir, bool doData, int latex, int doSig, bool doWeighted ) {
   initialize(path, doData, doSig);
-  printYields(mcfiles_, mclabels_, data_, dir, doData, latex);
+  printYields(mcfiles_, mclabels_, data_, dir, doData, latex, doWeighted);
 }
 
-void printCutflowRegion( const char* path, const char* dir, bool doData, int latex, int doSig ) {
+void printCutflowRegion( const char* path, const char* dir, bool doData, int latex, int doSig, bool doWeighted ) {
   initialize(path, doData, doSig);
   std::vector<char*> dirs;
   TString tdir = TString(dir);
@@ -184,6 +249,10 @@ void printCutflowRegion( const char* path, const char* dir, bool doData, int lat
     dirs.push_back("sig_mt_nm1");
     dirs.push_back("sig_mt2bl_nm1");
     dirs.push_back("sig_final");
+  } else if (tdir.EqualTo("inc")) {
+    dirs.push_back("inc_presel");
+    dirs.push_back("inc_1b");
+    dirs.push_back("inc_2b");
   } else if (tdir.EqualTo("sig_bbmasslast")) {
     dirs.push_back("sig_bbmasslast_presel");
     dirs.push_back("sig_bbmasslast_met_nm1");
@@ -231,9 +300,9 @@ void printCutflowRegion( const char* path, const char* dir, bool doData, int lat
     dirs.push_back("cr23_presel");
     dirs.push_back("cr23_bbmass_nm1");
     dirs.push_back("cr23_mt_nm1"); 
-    dirs.push_back("cr23_mt2blfirst");
+    //    dirs.push_back("cr23_mt2blfirst");
     dirs.push_back("cr23_met_nm1");
-    dirs.push_back("cr23_mt2bl_nm1");
+    //    dirs.push_back("cr23_mt2bl_nm1");
     dirs.push_back("cr23_mt2blcut");
     dirs.push_back("cr23_final");
   // } else if (tdir.EqualTo("cr2")) {
@@ -316,14 +385,28 @@ void printCutflowRegion( const char* path, const char* dir, bool doData, int lat
     return;
   }
 
-  printCutflow(mcfiles_, mclabels_, data_, dirs, doData, false, latex);
+  printCutflow(mcfiles_, mclabels_, data_, dirs, doData, false, latex, doWeighted);
+}
+
+void printSignalTable( const char* path, bool doData, int latex, int doSig, bool doWeighted ) {
+  initialize(path, doData, doSig);
+  std::vector<char*> dirs;
+  dirs.push_back("sig_metlast_met100");
+  dirs.push_back("sig_metlast_met125");
+  dirs.push_back("sig_metlast_met150");
+  dirs.push_back("sig_metlast_final");
+  // dirs.push_back("sig_2loose_met100");
+  // dirs.push_back("sig_2loose_met150");
+  // dirs.push_back("sig_2loose_final");
+
+  printSigRegions(mcfiles_, mclabels_, data_, dirs, doData, latex, doWeighted);
 }
 
 void saveAllHists( const char* path, const char* dir, const char* flavor, const char* outpath, bool doData, int rebin, bool normalize, float mcnorm ) {
 
   std::vector<std::string> histnames;
 
-  histnames.push_back("h_bbmass");
+  //  histnames.push_back("h_bbmass");
   histnames.push_back("h_met");
   histnames.push_back("h_lep1mt");
   histnames.push_back("h_mt2bl");
@@ -331,13 +414,13 @@ void saveAllHists( const char* path, const char* dir, const char* flavor, const 
   // histnames.push_back("h_mt2w");
   // histnames.push_back("h_bbpt");
   // histnames.push_back("h_wpt");
-  // histnames.push_back("h_lep1pt");
+  histnames.push_back("h_lep1pt");
   // histnames.push_back("h_lep1metdphi");
   // histnames.push_back("h_njets");
-  histnames.push_back("h_njetsalleta");
+  //  histnames.push_back("h_njetsalleta");
   // histnames.push_back("h_nbjets");
-  // histnames.push_back("h_jet1pt");
-  // histnames.push_back("h_jet2pt");
+  histnames.push_back("h_jet1pt");
+  histnames.push_back("h_jet2pt");
   // if (!TString(dir).Contains("cr5")) {
   //   histnames.push_back("h_bjet1pt");
   //   histnames.push_back("h_bjet2pt");
@@ -399,6 +482,62 @@ histStyle getHistStyle( const char* hist ) {
     style.xmin = 0.;
     style.xmax = 500.;
     style.xtitle = "H_{T} [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_lep1pt")) {
+    //    style.nbins = 15;
+    style.nbins = 12;
+    style.xmin = 0.;
+    style.xmax = 300.;
+    style.xtitle = "p_{T}(lep1) [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_lep1mt")) {
+    style.nbins = 14;
+    style.xmin = 0.;
+    style.xmax = 350.;
+    // style.nbins = 20;
+    // style.xmin = 0.;
+    //    style.xmax = 500.;
+    style.xtitle = "m_{T}(lep1) [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_mt2bl")) {
+    style.nbins = 14;
+    style.xmin = 0.;
+    style.xmax = 350.;
+    // style.nbins = 20;
+    // style.xmin = 0.;
+    //    style.xmax = 500.;
+    style.xtitle = "M_{T2}^{bl} [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_jet1pt")) {
+    // style.nbins = 25;
+    // style.xmin = 0.;
+    //    style.xmax = 500.;
+    style.nbins = 14;
+    style.xmin = 0.;
+    style.xmax = 350.;
+    style.xtitle = "p_{T}(jet1) [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_jet2pt")) {
+    // style.nbins = 15;
+    // style.xmin = 0.;
+    // style.xmax = 300.;
+    style.nbins = 12;
+    style.xmin = 0.;
+    style.xmax = 300.;
+    style.xtitle = "p_{T}(jet2) [GeV]";
+    style.log = true;
+  } else if (matchHistName(histString,"h_met")) {
+    // style.nbins = 60;
+    // style.xmin = 0.;
+    // style.xmax = 300.;
+    style.nbins = 14;
+    style.xmin = 0.;
+    style.xmax = 350.;
+    // style.nbins = 20;
+    // style.xmin = 0.;
+    //    style.xmax = 500.;
+    style.xtitle = "pf MET [GeV]";
+    //    style.xtitle = "type 1 phi cor pf MET [GeV]";
     style.log = true;
   } else if (matchHistName(histString,"h_ht")) {
     style.nbins = 32;
@@ -508,12 +647,6 @@ histStyle getHistStyle( const char* hist ) {
     style.xmax = 2*TMath::Pi();
     style.xtitle = "#Delta#phi(ll)";
     style.log = false;
-  } else if (matchHistName(histString,"h_lep1pt")) {
-    style.nbins = 15;
-    style.xmin = 0.;
-    style.xmax = 300.;
-    style.xtitle = "p_{T}(lep1) [GeV]";
-    style.log = true;
   } else if (matchHistName(histString,"h_lep2pt")) {
     style.nbins = 15;
     style.xmin = 0.;
@@ -525,12 +658,6 @@ histStyle getHistStyle( const char* hist ) {
     style.xmin = 0.;
     style.xmax = 300.;
     style.xtitle = "p_{T}(lep3) [GeV]";
-    style.log = true;
-  } else if (matchHistName(histString,"h_lep1mt")) {
-    style.nbins = 20;
-    style.xmin = 0.;
-    style.xmax = 500.;
-    style.xtitle = "m_{T}(lep1) [GeV]";
     style.log = true;
   } else if (matchHistName(histString,"h_lep2mt")) {
     style.nbins = 60;
@@ -604,12 +731,6 @@ histStyle getHistStyle( const char* hist ) {
     style.xmax = 500.;
     style.xtitle = "M_{T2}^{b} [GeV]";
     style.log = true;
-  } else if (matchHistName(histString,"h_mt2bl")) {
-    style.nbins = 20;
-    style.xmin = 0.;
-    style.xmax = 500.;
-    style.xtitle = "M_{T2}^{bl} [GeV]";
-    style.log = true;
   } else if (matchHistName(histString,"h_mt2w")) {
     style.nbins = 20;
     style.xmin = 0.;
@@ -652,18 +773,6 @@ histStyle getHistStyle( const char* hist ) {
     style.xmax = 3.0;
     style.xtitle = "y(jet1)";
     style.log = false;
-  } else if (matchHistName(histString,"h_jet1pt")) {
-    style.nbins = 25;
-    style.xmin = 0.;
-    style.xmax = 500.;
-    style.xtitle = "p_{T}(jet1) [GeV]";
-    style.log = true;
-  } else if (matchHistName(histString,"h_jet2pt")) {
-    style.nbins = 15;
-    style.xmin = 0.;
-    style.xmax = 300.;
-    style.xtitle = "p_{T}(jet2) [GeV]";
-    style.log = true;
   } else if (matchHistName(histString,"h_jet3pt")) {
     style.nbins = 15;
     style.xmin = 0.;
@@ -898,16 +1007,6 @@ histStyle getHistStyle( const char* hist ) {
     style.xmin = 0.;
     style.xmax = 500.;
     style.xtitle = "p_{T}(W) [GeV]";
-    style.log = true;
-  } else if (matchHistName(histString,"h_met")) {
-    // style.nbins = 60;
-    // style.xmin = 0.;
-    // style.xmax = 300.;
-    style.nbins = 20;
-    style.xmin = 0.;
-    style.xmax = 500.;
-    style.xtitle = "pf MET [GeV]";
-    //    style.xtitle = "type 1 phi cor pf MET [GeV]";
     style.log = true;
   } else if (matchHistName(histString,"h_ljetspt")) {
     style.nbins = 20;

@@ -24,6 +24,7 @@ TFile *tt0l_;
 TFile *tt1l_;
 TFile *tt2l_;
 TFile *wjets_;
+TFile *wjetsdd_;
 TFile *wbb_;
 TFile *zjets_;
 TFile *vv_;
@@ -33,9 +34,15 @@ TFile *t2l_;
 TFile *ttV_;
 TFile *vvv_;
 TFile *rare_;
+TFile *rareall_;
 TFile *whbb_;
+TFile *diltop_;
+TFile *lepb_;
+TFile *top1l_;
 
+TFile *TChiwh_130_1_;
 TFile *TChiwh_150_1_;
+TFile *TChiwh_175_1_;
 TFile *TChiwh_200_1_;
 TFile *TChiwh_250_1_;
 TFile *TChiwh_250_25_;
@@ -53,9 +60,11 @@ void initialize( const char* path, bool doData = true, int doSig = 0 );
 //                              int rebin = 1, bool normalize = false, float mcnorm = -1. );
 TCanvas* stackHistAuto( const char* path, const char* hist, const char* flavor, const char* dir, bool doData = true, 
 			int rebin = 1, bool normalize = false, float mcnorm = -1., int doSig = 0 , const char* scalesample = "");
-void printYieldsDir( const char* path, const char* dir, bool doData, int latex = 0, int doSig = 9 );
+void printYieldsDir( const char* path, const char* dir, bool doData, int latex = 0, int doSig = 9, bool doWeighted = true );
 void saveAllHists( const char* path, const char* dir, const char* flavor, const char* outpath, bool doData, int rebin = 1, bool normalize = false, float mcnorm = -1. );
 bool matchHistName(const TString& histname, const TString& matchname);
 bool matchHistName(const TString& histname, const char* matchname);
+void printCutflowRegion( const char* path, const char* dir, bool doData, int latex, int doSig, bool doWeighted = true );
+void printSignalTable( const char* path, bool doData, int latex, int doSig, bool doWeighted = true );
 
 #endif

@@ -29,6 +29,7 @@
 #include <iomanip>
 #include "TF1.h"
 
+//______________________________________________________________________________
 float histError( TH1F* h , int minbin , int maxbin ){
 
   float err2 = 0;
@@ -39,6 +40,7 @@ float histError( TH1F* h , int minbin , int maxbin ){
   return sqrt(err2);
 }
 
+//______________________________________________________________________________
 void printLine( int latex ){
 
   if( latex == 1 ){
@@ -53,17 +55,18 @@ void printLine( int latex ){
   }
 }
 
+//______________________________________________________________________________
 void printHeader(bool dilep){
 
   if (dilep) {
-    cout << delimstart << setw(width1) << "Sample"    << setw(width2)
+    cout << delimstart << setw(startwidth) << "Sample"    << setw(width2)
 	 << delim      << setw(width1) << ee          << setw(width2)
 	 << delim      << setw(width1) << mm          << setw(width2)
 	 << delim      << setw(width1) << em          << setw(width2)
 	 << delim      << setw(width1) << "total"     << setw(width2) 
 	 << delimend   << endl;
   } else {
-    cout << delimstart << setw(width1) << "Sample"    << setw(width2)
+    cout << delimstart << setw(startwidth) << "Sample"    << setw(width2)
 	 << delim      << setw(width1) << e          << setw(width2)
 	 << delim      << setw(width1) << m          << setw(width2)
 	 << delim      << setw(width1) << "total"     << setw(width2) 
@@ -72,6 +75,7 @@ void printHeader(bool dilep){
 }
 
 
+//______________________________________________________________________________
 void print( TH1F* h , string label , bool dilep, bool correlatedError ){
 
   stringstream se;
@@ -82,12 +86,12 @@ void print( TH1F* h , string label , bool dilep, bool correlatedError ){
   stringstream stot;
 
   if (dilep) {
-    if( label == "data" ){
+    if( label == "Data" ){
       see  << Form( "%.0f" , h->GetBinContent(1) );
       smm  << Form( "%.0f" , h->GetBinContent(2) );
       sem  << Form( "%.0f" , h->GetBinContent(3) );
       stot << Form( "%.0f" , h->GetBinContent(4)       );
-    } else if( label == "data/MC" ){
+    } else if( label == "Data/Pred" ){
       see  << Form( "%.2f" , h->GetBinContent(1) ) << pm << Form( "%.2f" , h->GetBinError(1) );
       smm  << Form( "%.2f" , h->GetBinContent(2) ) << pm << Form( "%.2f" , h->GetBinError(2) );
       sem  << Form( "%.2f" , h->GetBinContent(3) ) << pm << Form( "%.2f" , h->GetBinError(3) );
@@ -104,7 +108,7 @@ void print( TH1F* h , string label , bool dilep, bool correlatedError ){
       stot << Form( "%.1f" , h->GetBinContent(4)       ) << pm << Form( "%.1f" , error  );
     }
 
-    cout << delimstart << setw(width1) << label      << setw(width2)
+    cout << delimstart << setw(startwidth) << label      << setw(width2)
 	 << delim      << setw(width1) << see.str()  << setw(width2)
 	 << delim      << setw(width1) << smm.str()  << setw(width2)
 	 << delim      << setw(width1) << sem.str()  << setw(width2)
@@ -113,11 +117,11 @@ void print( TH1F* h , string label , bool dilep, bool correlatedError ){
   }
 
   else {
-    if( label == "data" ){
+    if( label == "Data" ){
       se  << Form( "%.0f" , h->GetBinContent(1) );
       sm  << Form( "%.0f" , h->GetBinContent(2) );
       stot << Form( "%.0f" , h->GetBinContent(3)       );
-    } else if( label == "data/MC" ){
+    } else if( label == "Data/Pred" ){
       se  << Form( "%.2f" , h->GetBinContent(1) ) << pm << Form( "%.2f" , h->GetBinError(1) );
       sm  << Form( "%.2f" , h->GetBinContent(2) ) << pm << Form( "%.2f" , h->GetBinError(2) );
       stot << Form( "%.2f" , h->GetBinContent(3) ) << pm << Form( "%.2f" , h->GetBinError(3) );
@@ -132,7 +136,7 @@ void print( TH1F* h , string label , bool dilep, bool correlatedError ){
       stot << Form( "%.2f" , h->GetBinContent(3)       ) << pm << Form( "%.2f" , error  );
     }
 
-    cout << delimstart << setw(width1) << label      << setw(width2)
+    cout << delimstart << setw(startwidth) << label      << setw(width2)
 	 << delim      << setw(width1) << se.str()  << setw(width2)
 	 << delim      << setw(width1) << sm.str()  << setw(width2)
 	 << delim      << setw(width1) << stot.str() << setw(width2)
@@ -141,7 +145,8 @@ void print( TH1F* h , string label , bool dilep, bool correlatedError ){
   
 }
 
-void printYields( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , const char* dir , bool doData, int latex ){
+//______________________________________________________________________________
+void printYields( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , const char* dir , bool doData, int latex, bool doWeighted ){
 
   initSymbols( latex );
   bool dilep = false;
@@ -176,7 +181,7 @@ void printYields( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafil
 
     bool correlatedError = false;
 
-    if( TString(labels[imc]).Contains("TChi") ) continue;
+    if( TString(labels[imc]).Contains("TChi") || TString(labels[imc]).Contains("Wino") ) continue;
 
     if (dilep) {
       TH1F* mchist = (TH1F*)mcfiles[imc]->Get(histname.Data());
@@ -184,25 +189,25 @@ void printYields( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafil
       TH1F* mchist_mm = (TH1F*)mcfiles[imc]->Get(histname_mm.Data());
       TH1F* mchist_em = (TH1F*)mcfiles[imc]->Get(histname_em.Data());
 
-      fillYieldHist(mchist,hyield,4);
-      fillYieldHist(mchist_ee,hyield,1);
-      fillYieldHist(mchist_mm,hyield,2);
-      fillYieldHist(mchist_em,hyield,3);
+      fillYieldHist(mchist,hyield,4,doWeighted);
+      fillYieldHist(mchist_ee,hyield,1,doWeighted);
+      fillYieldHist(mchist_mm,hyield,2,doWeighted);
+      fillYieldHist(mchist_em,hyield,3,doWeighted);
     }
     else {
       TH1F* mchist = (TH1F*)mcfiles[imc]->Get(histname.Data());
       TH1F* mchist_e = (TH1F*)mcfiles[imc]->Get(histname_e.Data());
       TH1F* mchist_m = (TH1F*)mcfiles[imc]->Get(histname_m.Data());
 
-      fillYieldHist(mchist,hyield,3);
-      fillYieldHist(mchist_e,hyield,1);
-      fillYieldHist(mchist_m,hyield,2);
+      fillYieldHist(mchist,hyield,3,doWeighted);
+      fillYieldHist(mchist_e,hyield,1,doWeighted);
+      fillYieldHist(mchist_m,hyield,2,doWeighted);
     }
 
     if( imc == 0 ) hmctot = (TH1F*) hyield->Clone();
     else           hmctot->Add(hyield);
     
-    print( hyield , labels[imc] , dilep, correlatedError );
+    print( hyield , getTableName(labels[imc],latex) , dilep, correlatedError );
 
     //hyield->Reset();
   }
@@ -213,7 +218,7 @@ void printYields( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafil
   // print sum of SM MC samples
   //-------------------------------
 
-  print( hmctot , "total SM MC", dilep );
+  print( hmctot , "Total SM Pred", dilep );
 
   printLine(latex);
  
@@ -225,29 +230,29 @@ void printYields( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafil
       TH1F* datahist_mm = (TH1F*)datafile->Get(histname_mm.Data());
       TH1F* datahist_em = (TH1F*)datafile->Get(histname_em.Data());
 
-      fillYieldHist(datahist,hyield,4);
-      fillYieldHist(datahist_ee,hyield,1);
-      fillYieldHist(datahist_mm,hyield,2);
-      fillYieldHist(datahist_em,hyield,3);
+      fillYieldHist(datahist,hyield,4,doWeighted);
+      fillYieldHist(datahist_ee,hyield,1,doWeighted);
+      fillYieldHist(datahist_mm,hyield,2,doWeighted);
+      fillYieldHist(datahist_em,hyield,3,doWeighted);
     }
     else {
       TH1F* datahist = (TH1F*)datafile->Get(histname.Data());
       TH1F* datahist_e = (TH1F*)datafile->Get(histname_e.Data());
       TH1F* datahist_m = (TH1F*)datafile->Get(histname_m.Data());
 
-      fillYieldHist(datahist,hyield,3);
-      fillYieldHist(datahist_e,hyield,1);
-      fillYieldHist(datahist_m,hyield,2);
+      fillYieldHist(datahist,hyield,3,doWeighted);
+      fillYieldHist(datahist_e,hyield,1,doWeighted);
+      fillYieldHist(datahist_m,hyield,2,doWeighted);
     }
 
-    print( hyield , "data", dilep );
+    print( hyield , "Data", dilep );
     
     printLine(latex);
 
     TH1F* hratio = (TH1F*)hyield->Clone("hratio");
     hratio->Divide(hmctot);
 
-    print( hratio , "data/MC", dilep );
+    print( hratio , "Data/Pred", dilep );
     
     printLine(latex);
   }
@@ -258,7 +263,7 @@ void printYields( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafil
 
   for(unsigned int imc = 0 ; imc < mcfiles.size() ; imc++){
 
-    if( !TString(labels[imc]).Contains("TChi") )   continue;
+    if( !TString(labels[imc]).Contains("TChi") && !TString(labels[imc]).Contains("Wino") )   continue;
 
     if (dilep) {
       TH1F* mchist = (TH1F*)mcfiles[imc]->Get(histname.Data());
@@ -266,10 +271,10 @@ void printYields( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafil
       TH1F* mchist_mm = (TH1F*)mcfiles[imc]->Get(histname_mm.Data());
       TH1F* mchist_em = (TH1F*)mcfiles[imc]->Get(histname_em.Data());
 
-      fillYieldHist(mchist,hyield,4);
-      fillYieldHist(mchist_ee,hyield,1);
-      fillYieldHist(mchist_mm,hyield,2);
-      fillYieldHist(mchist_em,hyield,3);
+      fillYieldHist(mchist,hyield,4,doWeighted);
+      fillYieldHist(mchist_ee,hyield,1,doWeighted);
+      fillYieldHist(mchist_mm,hyield,2,doWeighted);
+      fillYieldHist(mchist_em,hyield,3,doWeighted);
 
     }
     else {
@@ -277,12 +282,12 @@ void printYields( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafil
       TH1F* mchist_e = (TH1F*)mcfiles[imc]->Get(histname_e.Data());
       TH1F* mchist_m = (TH1F*)mcfiles[imc]->Get(histname_m.Data());
 
-      fillYieldHist(mchist,hyield,3);
-      fillYieldHist(mchist_e,hyield,1);
-      fillYieldHist(mchist_m,hyield,2);
+      fillYieldHist(mchist,hyield,3,doWeighted);
+      fillYieldHist(mchist_e,hyield,1,doWeighted);
+      fillYieldHist(mchist_m,hyield,2,doWeighted);
     }
 
-    print( hyield , labels[imc], dilep );
+    print( hyield , getTableName(labels[imc],1), dilep );
 
   }
 
@@ -292,16 +297,19 @@ void printYields( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafil
   delete hmctot;
 }
 
-void fillYieldHist( TH1F* hin, TH1F* hyield, int bin ) {
+//______________________________________________________________________________
+void fillYieldHist( TH1F* hin, TH1F* hyield, int bin, bool doWeighted ) {
 
+  int events_bin = 2;
+  if (!doWeighted) events_bin = 1;
   Double_t err = 0.;
   if (hin) {
     // float nmc = hin->IntegralAndError(0,-1,err);
     // hyield->SetBinContent(bin,nmc);
     // hyield->SetBinError(bin,err);
     // these assume h_events with bin 2 having the weighted event yields
-    hyield->SetBinContent(bin,hin->GetBinContent(2));
-    hyield->SetBinError(bin,hin->GetBinError(2));
+    hyield->SetBinContent(bin,hin->GetBinContent(events_bin));
+    hyield->SetBinError(bin,hin->GetBinError(events_bin));
   } else {
     hyield->SetBinContent(bin,0.);
     hyield->SetBinError(bin,0.);
@@ -309,7 +317,8 @@ void fillYieldHist( TH1F* hin, TH1F* hyield, int bin ) {
 
 }
 
-void printCutflow( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , vector<char*> dirs , bool doData, bool splitMC, int latex ){
+//______________________________________________________________________________
+void printCutflow( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , vector<char*> dirs , bool doData, bool splitMC, int latex, bool doWeighted ){
 
   initSymbols( latex );
 
@@ -323,7 +332,7 @@ void printCutflow( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafi
   // loop through mc files and separate into signals and bgs
   for(unsigned int imc = 0 ; imc < mcfiles.size() ; ++imc) {
     TString label = TString(labels[imc]);
-    if( label.Contains("TChi") ) {
+    if( label.Contains("TChi") || label.Contains("Wino") ) {
       sig_labels.push_back(label);
       sig_files.push_back(mcfiles[imc]);
     } else {
@@ -337,20 +346,23 @@ void printCutflow( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafi
   //  bin 2: weighted event yield
   TString histname = "h_events";
 
+  int events_bin = 2;
+  if (!doWeighted) events_bin = 1;
+
   printLine(latex);
   // header info
-  cout << delimstart << setw(width1) << "Selection"    << setw(width2);
+  cout << delimstart << setw(startwidth) << "Selection"    << setw(width2);
   if (splitMC) {
     for(unsigned int ibg = 0 ; ibg < bg_labels.size() ; ++ibg){
-      cout << delim      << setw(width1) << bg_labels[ibg]    << setw(width2);
+      cout << delim      << setw(width1) << getTableName(bg_labels[ibg],latex)    << setw(width2);
     }
   }
-  cout << delim      << setw(width1) << "MC Total"     << setw(width2);
+  cout << delim      << setw(width1) << "Total Pred"     << setw(width2);
   if (doData) cout << delim      << setw(width1) << "Data"          << setw(width2)
-		   << delim      << setw(width1) << "Data/MC"          << setw(width2);
+		   << delim      << setw(width1) << "Data/Pred"          << setw(width2);
   // print signals here
   for(unsigned int isig = 0 ; isig < sig_labels.size() ; ++isig){
-    cout << delim      << setw(width1) << sig_labels[isig]    << setw(width2);
+    cout << delim      << setw(width1) << getTableName(sig_labels[isig],1)    << setw(width2);
   }
   cout << delimend   << endl;
   printLine(latex);
@@ -362,15 +374,15 @@ void printCutflow( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafi
     float nmc_tot = 0.;
     float errmc_tot = 0.;
 
-    cout << delimstart << setw(width1) << dirs[idir]  << setw(width2);
+    cout << delimstart << setw(startwidth) << dirs[idir]  << setw(width2);
     // loop over backgrounds
     for(unsigned int ibg = 0 ; ibg < bg_labels.size() ; ++ibg){
       TH1F* mchist = (TH1F*)bg_files[ibg]->Get(histname_dir.Data());
       float nmc = 0.;
       float errmc = 0.;
       if (mchist) {
-	float nmc = mchist->GetBinContent(2);
-	float errmc = mchist->GetBinError(2);
+	float nmc = mchist->GetBinContent(events_bin);
+	float errmc = mchist->GetBinError(events_bin);
 	nmc_tot += nmc;
 	errmc_tot += pow(errmc,2);
       }
@@ -391,8 +403,8 @@ void printCutflow( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafi
       float errdataovermc = 0.;
 
       if (datahist) {
-	ndata = datahist->GetBinContent(2);
-	errdata = datahist->GetBinError(2);
+	ndata = datahist->GetBinContent(events_bin);
+	errdata = datahist->GetBinError(events_bin);
 
 	if (nmc_tot > 0.) {
 	  dataovermc = ndata/nmc_tot;
@@ -408,8 +420,8 @@ void printCutflow( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafi
     // print signals here
     for(unsigned int isig = 0 ; isig < sig_labels.size() ; ++isig){
       TH1F* mchist = (TH1F*)sig_files[isig]->Get(histname_dir.Data());
-      float nmc = mchist->GetBinContent(2);
-      float errmc = mchist->GetBinError(2);
+      float nmc = mchist->GetBinContent(events_bin);
+      float errmc = mchist->GetBinError(events_bin);
       cout << delim      << setw(width1) << Form( "%.1f" , nmc ) << pm << Form( "%.1f" , errmc )  << setw(width2);
     }
     cout << delimend   << endl;
@@ -421,10 +433,196 @@ void printCutflow( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafi
 }
 
 
+//______________________________________________________________________________
+void printSigRegions( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , vector<char*> dirs , bool doData, int latex, bool doWeighted ){
+
+  initSymbols( latex );
+
+  std::vector<TString> bg_labels;
+  std::vector<TFile*> bg_files;
+  std::vector<TString> sig_labels;
+  std::vector<TFile*> sig_files;
+
+  assert(mcfiles.size() == labels.size());
+
+  // loop through mc files and separate into signals and bgs
+  for(unsigned int imc = 0 ; imc < mcfiles.size() ; ++imc) {
+    TString label = TString(labels[imc]);
+    if( label.Contains("TChi") || label.Contains("Wino") ) {
+      sig_labels.push_back(label);
+      sig_files.push_back(mcfiles[imc]);
+    } else {
+      bg_labels.push_back(label);
+      bg_files.push_back(mcfiles[imc]);
+    }
+  }
+
+  // h_events:
+  //  bin 1: unweighted event yield
+  //  bin 2: weighted event yield
+  TString histname = "h_events";
+
+  int events_bin = 2;
+  if (!doWeighted) events_bin = 1;
+
+  printLine(latex);
+  // header info
+  cout << delimstart << setw(startwidth) << "Sample"    << setw(width2);
+  for (unsigned int idir = 0; idir < dirs.size(); ++idir) {
+    cout << delim      << setw(width1) << dirs[idir]    << setw(width2);
+  }
+  cout << delimend   << endl;
+  printLine(latex);
+
+  std::vector<float> nmc_tot(dirs.size(),0.);
+  std::vector<float> errmc_tot(dirs.size(),0.);
+
+  // loop over backgrounds
+  for(unsigned int ibg = 0 ; ibg < bg_labels.size() ; ++ibg){
+    cout << delimstart << setw(startwidth) << getTableName(bg_labels[ibg],latex)  << setw(width2);
+    // loop over dirs, print counts for each
+    for (unsigned int idir = 0; idir < dirs.size(); ++idir) {
+      TString histname_dir = histname;
+      if (!TString(dirs[idir]).Length() == 0) histname_dir = Form("%s/",dirs[idir]) + histname;
+
+      TH1F* mchist = (TH1F*)bg_files[ibg]->Get(histname_dir.Data());
+      float nmc = 0.;
+      float errmc = 0.;
+      if (mchist) {
+	nmc = mchist->GetBinContent(events_bin);
+	float errmc_stat = mchist->GetBinError(events_bin);
+	errmc = sqrt(pow(getSystError(bg_labels[ibg]) * nmc, 2) + pow(errmc_stat,2));
+	nmc_tot[idir] += nmc;
+	errmc_tot[idir] += pow(errmc,2);
+      }
+
+      stringstream out;
+      out << Form( "%.1f" , nmc ) << pm << Form( "%.1f" , errmc );
+      cout << delim      << setw(width1) << out.str()  << setw(width2);
+
+    } // loop over dirs
+    cout << delimend   << endl;
+
+  } // loop over bgs
+  printLine(latex);
+
+  // total predictions for each dir
+  cout << delimstart << setw(startwidth) << "Total SM Pred"  << setw(width2);
+  for (unsigned int idir = 0; idir < dirs.size(); ++idir) {
+    errmc_tot[idir] = sqrt(errmc_tot[idir]);
+    stringstream out;
+    out << Form( "%.1f" , nmc_tot[idir] ) << pm << Form( "%.1f" , errmc_tot[idir] );
+    cout << delim      << setw(width1) << out.str()  << setw(width2);
+  }
+  cout << delimend   << endl;
+  printLine(latex);
+
+  // print data (or placeholder if blinding)
+  cout << delimstart << setw(startwidth) << "Data"  << setw(width2);
+  for (unsigned int idir = 0; idir < dirs.size(); ++idir) {
+    stringstream out;
+    if (!doData) {
+      out << "-";
+      cout << delim      << setw(width1) << out.str()  << setw(width2);
+      continue;
+    }
+    TString histname_dir = histname;
+    if (!TString(dirs[idir]).Length() == 0) histname_dir = Form("%s/",dirs[idir]) + histname;
+    TH1F* datahist = (TH1F*)datafile->Get(histname_dir.Data());
+    float ndata = 0.;
+    float errdata = 0.;
+    if (datahist) {
+      ndata = datahist->GetBinContent(events_bin);
+      errdata = datahist->GetBinError(events_bin);
+    } 
+    out << Form("%d",int(ndata));
+    cout << delim      << setw(width1) << out.str()  << setw(width2);
+  }
+  cout << delimend   << endl;
+  printLine(latex);
+
+  // print signals here
+  for(unsigned int isig = 0 ; isig < sig_labels.size() ; ++isig){
+    cout << delimstart << setw(startwidth) << getTableName(sig_labels[isig],latex)  << setw(width2);
+    for (unsigned int idir = 0; idir < dirs.size(); ++idir) {
+      TString histname_dir = histname;
+      if (!TString(dirs[idir]).Length() == 0) histname_dir = Form("%s/",dirs[idir]) + histname;
+      TH1F* mchist = (TH1F*)sig_files[isig]->Get(histname_dir.Data());
+      float nmc = 0.;
+      float errmc = 0.;
+      if (mchist) {
+	nmc = mchist->GetBinContent(events_bin);
+	float errmc_stat = mchist->GetBinError(events_bin);
+	errmc = sqrt(pow(getSystError(sig_labels[isig]) * nmc, 2) + pow(errmc_stat,2));
+      }
+      stringstream out;
+      out << Form( "%.1f" , nmc ) << pm << Form( "%.1f" , errmc );
+      cout << delim      << setw(width1) << out.str()  << setw(width2);
+
+    } // loop over dirs
+    cout << delimend   << endl;
+
+  } // loop over sigs
+
+  printLine(latex);
+
+}
+
+//______________________________________________________________________________
+float getSystError( const TString sample ){
+
+  if (sample.Contains("ttbar 2l")) return 0.4;
+  else if (sample.Contains("ttbar 1l")) return 0.5;
+  else if (sample.Contains("wlight")) return 0.4;
+  else if (sample.Contains("wbb")) return 0.5;
+  else if (sample.Contains("single top 1l")) return 0.5;
+  else if (sample.Contains("single top 2l")) return 0.4;
+  else if (sample.Contains("rare")) return 0.5;
+  else if (sample.Contains("whbb")) return 0.5;
+  else if (sample.Contains("dilep top")) return 0.4;
+  else if (sample.Contains("lep plus b")) return 0.5;
+  else if (sample.Contains("top 1l")) return 0.5;
+  else if (sample.Contains("TChi")) return 0.0;
+  else if (sample.Contains("Wino")) return 0.0;
+  //  else if (sample.Contains("TChi")) return 0.1;
+
+  std::cout << "ERROR: getSystError: didn't recognize sample: " << sample << std::endl;
+  return 0.;
+
+}
+
+//______________________________________________________________________________
+std::string getTableName( const TString sample, int latex ){
+
+  if (latex == 0) {
+    return std::string(sample.Data());
+  }
+
+  if (sample.Contains("ttbar 2l")) return "$t\\bar{t} \\rightarrow \\ell\\ell$";
+  else if (sample.Contains("ttbar 1l")) return "$t\\bar{t} \\rightarrow \\ell+$ jets";
+  else if (sample.Contains("wlight")) return "W + light";
+  else if (sample.Contains("wbb")) return "W + $b\\bar{b}$";
+  else if (sample.Contains("single top 1l")) return "single top $1\\ell$";
+  else if (sample.Contains("single top 2l")) return "$tW \\rightarrow \\ell\\ell$";
+  else if (sample.Contains("rare")) return "Rare";
+  else if (sample.Contains("whbb")) return "$WH \\rightarrow \\ell\\nu b\\bar{b}$";
+  else if (sample.Contains("dilep top")) return "Dilepton top";
+  else if (sample.Contains("lep plus b")) return "Single lepton + b";
+  else if (sample.Contains("top 1l")) return "Single lepton top";
+  else if (sample.Contains("_")) {
+    TString copy(sample);
+    return std::string(copy.ReplaceAll("_","\\_").Data());
+  } 
+
+  // no match: return input
+  return std::string(sample.Data());
+
+}
 
 #include <TList.h>
 #include <TIterator.h>
 
+//______________________________________________________________________________
 void deleteHistos() {
    // Delete all existing histograms in memory
    TObject* obj;
@@ -436,12 +634,14 @@ void deleteHistos() {
    }
 }
 
+//______________________________________________________________________________
 void initSymbols( int latex ){
 
   //-------------------------------------------------------
   // table format
   //-------------------------------------------------------
 
+  startwidth  = 35;
   width1      = 22;
   width2      = 5;
   linelength  = (width1+width2)*5+1;
@@ -485,13 +685,31 @@ void initSymbols( int latex ){
 }
 
 
+//______________________________________________________________________________
+int getColor(const TString sample) {
+
+  // original color scheme
+  if (sample.Contains("ttbar 2l")) return 7;
+  else if (sample.Contains("ttbar 1l")) return 4;
+  else if (sample.Contains("wlight")) return 2;
+  else if (sample.Contains("wbb")) return 5;
+  else if (sample.Contains("single top 1l")) return 8;
+  else if (sample.Contains("single top 2l")) return 9;
+  else if (sample.Contains("rare")) return 15;
+  else if (sample.Contains("whbb")) return 12;
+  else if (sample.Contains("dilep top")) return 7;
+  else if (sample.Contains("lep plus b")) return 4;
+  else if (sample.Contains("top 1l")) return 4;
+  else if (sample.Contains("_200_1")) return 2;
+  else if (sample.Contains("_250_1")) return 4;
+  else if (sample.Contains("_300_1")) return 3;
+
+  std::cout << "ERROR: getColor: didn't recognize sample: " << sample << std::endl;
+  return 1;
+}
+
+//______________________________________________________________________________
 TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1, float x2, float y2){
-
-  //int colors[]={6,2,7,4,5,8,9,15,12};
-  //  int colors[]={4,7,2,5,8,9,15,12,1};
-  int colors[]={7,4,2,5,8,9,15,12,1};
-
-  int sigcolors[]={2,4,3};  
 
   TLegend *leg = new TLegend(x1,y1,x2,y2);
 
@@ -512,12 +730,12 @@ TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1,
 
     char* t = labels.at(imc);
 
-    if( TString(t).Contains("TChiwh") )   continue;
+    if( TString(t).Contains("TChiwh") || TString(t).Contains("Wino") )   continue;
 
     mchist[imc] = new TH1F(Form("mc_%i",imc),Form("mc_%i",imc),1,0,1);
 
     // formatting
-    mchist[imc]->SetFillColor( colors[imc] );
+    mchist[imc]->SetFillColor( getColor(labels.at(imc)) );
 
     if( strcmp("tt",t)      == 0 ) t = "t#bar{t}";
     if( strcmp("ttbar",t)   == 0 ) t = "t#bar{t}";
@@ -553,13 +771,13 @@ TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1,
 
     char* t = labels.at(imc);
 
-    if( !TString(t).Contains("TChiwh") )   continue;
+    if( !TString(t).Contains("TChiwh") && !TString(t).Contains("Wino") )   continue;
 
     mchist[imc] = new TH1F(Form("mc_%i",imc),Form("mc_%i",imc),1,0,1);
 
     // formatting
     mchist[imc]->SetFillColor( 0 );
-    mchist[imc]->SetLineColor(sigcolors[nsigmc]);
+    mchist[imc]->SetLineColor( getColor(labels.at(imc)) );
     mchist[imc]->SetLineWidth(2);
     //    mchist[imc]->SetLineStyle(2);
     ++nsigmc;
@@ -583,6 +801,7 @@ TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1,
 
 }
 
+//______________________________________________________________________________
 //TH1F* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , const char* histname , const char* flavor , const char* dir ,
 TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFile* datafile , const char* histname , 
                     const char* flavor , const char* dir ,
@@ -595,7 +814,10 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
   TGraphErrors* gratio = 0;
 
   TString fullhistname = histname;
-  if (!TString(dir).Length() == 0) fullhistname = Form("%s/",dir) + fullhistname;
+  TString tsdir = TString(dir);
+  if (!tsdir.Length() == 0) fullhistname = Form("%s/",dir) + fullhistname;
+
+  TString ytitle = "Events";
 
   TPad* fullpad = new TPad();
   TPad* plotpad = new TPad();
@@ -616,16 +838,6 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
   }
 
   cout << "Plotting " << fullhistname << endl;
-
-  //int colors[]={6,2,7,4,5,8,9,15,12};
-  //int colors[]={kRed+2,5,7,5,5,8,9,15,12};
-  // zmet colors
-  //  int colors[]={4,7,2,5,8,9,15,12,1};
-
-  //  int colors[]={4,7,2,5,8,9,15,12,1};
-  int colors[]={7,4,2,5,8,9,15,12,1};
-
-  int sigcolors[]={2,4,3};
 
   assert( mcfiles.size() == labels.size() );
   const unsigned int nmc = mcfiles.size();
@@ -653,7 +865,7 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
       mchist[imc] = (TH1F*)mchist_tmp->Clone(fullhistname+Form("_%s",labels[imc]));
       Double_t err;
       float nmc = mchist[imc]->IntegralAndError(0,-1,err);
-      if (TString(labels[imc]).Contains("TChiwh")) {
+      if (TString(labels[imc]).Contains("TChiwh") || TString(labels[imc]).Contains("Wino")) {
 	// signal: don't add to bg total
 	cout << "MC signal yield " << labels[imc] << " " << Form("%.2f",nmc) << " +/- " << Form("%.2f",err) << endl;
       } else {
@@ -691,6 +903,7 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
 
   int nmcsig = 0;
   std::vector<TH1F*> mcsighist;
+  int rebinFactor = 1;
 
   //for( unsigned int imc = 0 ; imc < nmc ; imc++ ){
   for( int imc = nmc-1 ; imc > -1 ; imc-- ){
@@ -704,7 +917,7 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     int nbins_original = mchist[imc]->GetNbinsX();
     float xbinsize_original = (xmax_original - xmin_original)/float(nbins_original);
     float xbinsize = (xmax - xmin)/float(nbins);
-    int rebinFactor = int(xbinsize/xbinsize_original);
+    rebinFactor = int(xbinsize/xbinsize_original);
     if (rebinFactor != 1) mchist[imc]->Rebin(rebinFactor);
     mchist[imc]->SetAxisRange(xmin,xmax-0.1*xbinsize,"X");
     Double_t err;
@@ -712,22 +925,24 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     mchist[imc]->SetBinContent(nbins,lastbin_and_overflow);
     mchist[imc]->SetBinError(nbins,err);
 
-    if( normalize && ( tscalesample.EqualTo("all") || tscalesample.EqualTo(labels[imc]) ) ) {
+    //    if( normalize && ( tscalesample.EqualTo("all") || tscalesample.EqualTo(labels[imc]) ) ) {
+    if( normalize && ( tscalesample.EqualTo("all") || TString(labels[imc]).Contains(tscalesample) ) ) {
       if (mcnorm < 0.) mchist[imc]->Scale(SF);
       else mchist[imc]->Scale(mcnorm);
     }
 
-    if( TString( labels.at(imc) ).Contains("TChiwh") ){
+    if( TString( labels.at(imc) ).Contains("TChiwh") || TString( labels.at(imc) ).Contains("Wino") ){
       // signal
       mchist[imc]->SetFillColor( 0 );
       mchist[imc]->SetLineWidth(2);
+      mchist[imc]->SetLineColor( getColor(labels.at(imc)) );
       //      mchist[imc]->SetLineStyle(2);
       ++nmcsig;
       mcsighist.push_back(mchist[imc]);
     }else{
       // bg
       mchist[imc]->SetLineColor(kBlack);
-      mchist[imc]->SetFillColor( colors[imc] );
+      mchist[imc]->SetFillColor( getColor(labels.at(imc)) );
       mcstack->Add( mchist[imc] );
 
       //if( imc == 0 ) mctothist = (TH1F*) mchist[imc]->Clone();
@@ -740,6 +955,8 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
   }
 
   mctothist->SetLineColor(kBlack);
+
+  ytitle += Form(" / %d GeV",rebinFactor);
 
   if( overlayData ){
 
@@ -766,6 +983,8 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     datahist->GetXaxis()->SetTitleSize(0.05);
     datahist->GetXaxis()->SetLabelSize(0.04);
     datahist->GetXaxis()->SetTitleOffset(1.2);
+    datahist->GetYaxis()->SetTitle(ytitle);
+    datahist->GetYaxis()->SetTitleSize(0.05);
     datahist->SetLineColor(kBlack);
     datahist->SetMarkerColor(kBlack);
     datahist->SetMarkerStyle(20);
@@ -773,7 +992,6 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     mcstack->Draw("samehist");
     if (nmcsig > 0) {
       for (int i = (int) mcsighist.size() - 1; i > -1 ; i--) {
-        mcsighist[i]->SetLineColor( sigcolors[mcsighist.size()-1-i] );
 	mcsighist[i]->Draw("samehist");
       }
     }
@@ -795,12 +1013,13 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     else      mctothist->SetMaximum( 1.4 * max );
 
     mctothist->GetXaxis()->SetTitle(xtitle);
+    mctothist->GetYaxis()->SetTitle(ytitle);
+    mctothist->GetYaxis()->SetTitleSize(0.05);
     mctothist->Draw("hist");
     mcstack->Draw("hist same");
     mctothist->Draw("hist same axis");
     if (nmcsig > 0) {
       for (int i = (int) mcsighist.size() - 1; i > -1 ; i--) {
-        mcsighist[i]->SetLineColor( sigcolors[mcsighist.size()-1-i] );
 	mcsighist[i]->Draw("samehist");
       }
     }
@@ -834,6 +1053,10 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
   else                                       text->DrawLatex(0.2,0.78,"Events with e/#mu");
   //else                                       text->DrawLatex(0.2,0.78,"Events with e#mu");
   //else                                       text->DrawLatex(0.2,0.78,"Events with #mu#mu");
+  // label for specific control regions
+  if (tsdir.Contains("cr1_")) text->DrawLatex(0.2,0.73,"M(b#bar{b}) > 150 GeV");
+  else if (tsdir.Contains("cr8_")) text->DrawLatex(0.2,0.73,"M(b#bar{b}) < 100 GeV");
+  else if (tsdir.Contains("cr14_")) text->DrawLatex(0.2,0.73,"M(b#bar{b}) < 100 GeV or M(b#bar{b}) > 150 GeV");
 
   if( residual ){
     fullpad->cd();
@@ -895,8 +1118,8 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     ratio->GetYaxis()->SetNdivisions(5);
     ratio->GetYaxis()->SetLabelSize(0.15);
     //ratio->GetYaxis()->SetRangeUser(0.5,1.5);
-    ratio->GetYaxis()->SetRangeUser(0.5,1.5);
-    ratio->GetYaxis()->SetTitle("data/MC  ");
+    ratio->GetYaxis()->SetRangeUser(0.001,2.0);
+    ratio->GetYaxis()->SetTitle("Data/MC  ");
     ratio->GetXaxis()->SetLabelSize(0);
     ratio->GetXaxis()->SetTitleSize(0);
     ratio->SetMarkerSize(0.7);
@@ -1083,11 +1306,11 @@ TCanvas* compareNormalized(TH1F* h1, std::string label1, TH1F* h2, std::string l
   if (h3) h3_clone = (TH1F*)h3->Clone(Form("%s_clone",h3->GetName()));
   if (h4) h4_clone = (TH1F*)h4->Clone(Form("%s_clone",h4->GetName()));
 
-  h1_clone->SetMarkerColor(kBlue);
-  h1_clone->SetLineColor(kBlue);
+  h1_clone->SetMarkerColor(kRed);
+  h1_clone->SetLineColor(kRed);
   h1_clone->SetLineWidth(2);
-  h2_clone->SetMarkerColor(kRed);
-  h2_clone->SetLineColor(kRed);
+  h2_clone->SetMarkerColor(kBlue);
+  h2_clone->SetLineColor(kBlue);
   h2_clone->SetLineWidth(2);
   if (h3_clone) {
     h3_clone->SetMarkerColor(7);
@@ -1140,7 +1363,7 @@ TCanvas* compareNormalized(TH1F* h1, std::string label1, TH1F* h2, std::string l
     h1_norm->GetYaxis()->SetRangeUser(1E-4,1.1*h4_norm->GetMaximum());
   }
 
-  TLegend *leg = new TLegend(0.66,0.77,0.93,0.9);
+  TLegend *leg = new TLegend(0.57,0.69,0.93,0.9);
   leg->SetFillColor(0);
   leg->AddEntry(h1_norm,label1.c_str(),"l");
   leg->AddEntry(h2_norm,label2.c_str(),"l");
@@ -1153,8 +1376,7 @@ TCanvas* compareNormalized(TH1F* h1, std::string label1, TH1F* h2, std::string l
   return c;
 }
 
-// -----------------------------------------------
-
+//______________________________________________________________________________
 TH1F* cumulate (TH1F* in, bool increasing) {
   TH1F* h_out = new TH1F(in->GetName() + TString("tmp"), in->GetTitle(), in->GetNbinsX(),
 			 in->GetBinLowEdge(1), in->GetBinLowEdge(in->GetNbinsX() + 1));
@@ -1184,8 +1406,7 @@ TH1F* cumulate (TH1F* in, bool increasing) {
   return h_out;
 }
 
-// ---------------------------------------------------
-
+//______________________________________________________________________________
 TGraphErrors* eff_rej (TH1F* signal, TH1F* background, bool normalize, bool increasing, bool print) {
 
   TH1F* sig = (TH1F*)signal->Clone("h_tmp_s");
@@ -1304,8 +1525,10 @@ float err_mult(float A, float B, float errA, float errB, float C) {
 // integrates MET above various values and makes graph
 TGraphErrors* makeMETGraph(TH1F* hdata, TH1F* hmc, float xoffset) {
 
-  const int ncuts = 4;
-  const float vals[ncuts] = {50.,100.,150.,175.};
+  // const int ncuts = 4;
+  // const float vals[ncuts] = {50.,100.,150.,175.};
+  const int ncuts = 6;
+  const float vals[ncuts] = {50.,75.,100.,125.,150.,175.};
   const bool print = true;
 
   TGraphErrors* g = new TGraphErrors(ncuts);
@@ -1313,18 +1536,40 @@ TGraphErrors* makeMETGraph(TH1F* hdata, TH1F* hmc, float xoffset) {
   for (int i = 0; i < ncuts; ++i) {
     Double_t err_data = 0;
     Double_t err_mc = 0;
-    float n_data = hdata->IntegralAndError(vals[i],-1,err_data);
-    float n_mc = hmc->IntegralAndError(vals[i],-1,err_mc);
+    float n_data = hdata->IntegralAndError(vals[i]+1,-1,err_data);
+    float n_mc = hmc->IntegralAndError(vals[i]+1,-1,err_mc);
     float ratio = n_data/n_mc;
     float err = err_mult(n_data,n_mc,err_data,err_mc,ratio);
     g->SetPoint(i, i+0.5+xoffset, ratio);
     g->SetPointError(i, 0., err);
     if (print) {
       std::cout << "MET " << vals[i] << ": MC, data, ratio: " << Form("%.1f",n_mc) << " $\\pm$ " << Form("%.1f",err_mc)
-		<< " & " << n_data << " & " << Form("%.2f",ratio) << " $\\pm$ " << Form("%.2f",err) << std::endl;
+		<< " & " << Form("%.1f",n_data) << " $\\pm$ " << Form("%.1f",err_mc) << " & " 
+		<< Form("%.2f",ratio) << " $\\pm$ " << Form("%.2f",err) << std::endl;
     }
   }
 
   return g;
+}
+
+//______________________________________________________________________________
+// returns mt tail fraction 
+float getMTTailFrac(TFile* f, TString dir, Double_t& err, bool print = true) {
+
+  const int cut = 101;
+
+  TH1F* h = (TH1F*) f->Get(dir+"/h_lep1mt");
+  if (!h) {
+    std::cout << "ERROR: problem retreiving h_lep1mt from dir: " << dir << std::endl;
+    return -1.;
+  }
+
+  Double_t tail_err, all_err;
+  float tail = h->IntegralAndError(cut,-1,tail_err);
+  float all = h->IntegralAndError(0,-1,all_err);
+
+  err = err_mult(tail,all,tail_err,all_err,tail/all);
+  if (print) std::cout << "tail fraction: " << Form("%.3f",tail/all) << " $\\pm$ " << Form("%.3f",err) << std::endl;
+  return tail/all;
 }
 
