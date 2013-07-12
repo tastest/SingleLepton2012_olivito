@@ -57,6 +57,7 @@ void initialize( const char* path, bool doData, int doSig ) {
       // TChiwh_250_25_->Close();
       // TChiwh_250_50_->Close();
       TChiwh_350_1_->Close();
+      TChiwh_400_1_->Close();
     }
 
     mcfiles_.clear();
@@ -124,6 +125,7 @@ void initialize( const char* path, bool doData, int doSig ) {
     TChiwh_150_1_ = new TFile(Form("%s/Wino_150_1_histos.root",path));
     TChiwh_175_1_ = new TFile(Form("%s/Wino_175_1_histos.root",path));
     TChiwh_350_1_ = new TFile(Form("%s/Wino_350_1_histos.root",path));
+    TChiwh_400_1_ = new TFile(Form("%s/Wino_400_1_histos.root",path));
   }
 
   // --- control regions, wlight from MC
@@ -137,22 +139,22 @@ void initialize( const char* path, bool doData, int doSig ) {
   // mcfiles_.push_back(whbb_);     mclabels_.push_back("whbb");
 
   // --- control regions, wlight from dd
-  mcfiles_.push_back(tt2l_);    mclabels_.push_back("ttbar 2l");
-  mcfiles_.push_back(tt1l_);    mclabels_.push_back("ttbar 1l");
-  mcfiles_.push_back(wjetsdd_); mclabels_.push_back("wlight");
-  mcfiles_.push_back(wbb_); mclabels_.push_back("wbb");
-  mcfiles_.push_back(t1l_);     mclabels_.push_back("single top 1l");
-  mcfiles_.push_back(t2l_);     mclabels_.push_back("single top 2l");
-  mcfiles_.push_back(rare_);     mclabels_.push_back("rare");
-  mcfiles_.push_back(whbb_);     mclabels_.push_back("whbb");
+  // mcfiles_.push_back(tt2l_);    mclabels_.push_back("ttbar 2l");
+  // mcfiles_.push_back(tt1l_);    mclabels_.push_back("ttbar 1l");
+  // mcfiles_.push_back(wjetsdd_); mclabels_.push_back("wlight");
+  // mcfiles_.push_back(wbb_); mclabels_.push_back("wbb");
+  // mcfiles_.push_back(t1l_);     mclabels_.push_back("single top 1l");
+  // mcfiles_.push_back(t2l_);     mclabels_.push_back("single top 2l");
+  // mcfiles_.push_back(rare_);     mclabels_.push_back("rare");
+  // mcfiles_.push_back(whbb_);     mclabels_.push_back("whbb");
 
   // --- signal region, collapsed samples, wlight from dd
-  // mcfiles_.push_back(diltop_);    mclabels_.push_back("dilep top");
-  // mcfiles_.push_back(top1l_);    mclabels_.push_back("top 1l");
-  // mcfiles_.push_back(wbb_);    mclabels_.push_back("wbb");
-  // mcfiles_.push_back(wjetsdd_); mclabels_.push_back("wlight");
-  // //mcfiles_.push_back(wjets_); mclabels_.push_back("wlight");
-  // mcfiles_.push_back(rareall_);     mclabels_.push_back("rare");
+  mcfiles_.push_back(diltop_);    mclabels_.push_back("dilep top");
+  mcfiles_.push_back(top1l_);    mclabels_.push_back("top 1l");
+  mcfiles_.push_back(wbb_);    mclabels_.push_back("wbb");
+  mcfiles_.push_back(wjetsdd_); mclabels_.push_back("wlight");
+  //mcfiles_.push_back(wjets_); mclabels_.push_back("wlight");
+  mcfiles_.push_back(rareall_);     mclabels_.push_back("rare");
 
   //  mcfiles_.push_back(tt0l_);    mclabels_.push_back("ttbar 0l");
   //  mcfiles_.push_back(zjets_); mclabels_.push_back("zjets");
@@ -202,6 +204,7 @@ void initialize( const char* path, bool doData, int doSig ) {
     mcfiles_.push_back(TChiwh_250_1_);     mclabels_.push_back("Wino_250_1");
     mcfiles_.push_back(TChiwh_300_1_);     mclabels_.push_back("Wino_300_1");
     mcfiles_.push_back(TChiwh_350_1_);     mclabels_.push_back("Wino_350_1");
+    mcfiles_.push_back(TChiwh_400_1_);     mclabels_.push_back("Wino_400_1");
   }
 
   currentPath_ = std::string(path);
@@ -220,13 +223,13 @@ void stackHist( const char* path, const char* hist, const char* flavor, const ch
 
 //TH1F* stackHistAuto( const char* path, const char* hist, const char* flavor, const char* dir, bool doData, int rebin, bool normalize ) {
 // TGraphErrors* stackHistAuto( const char* path, const char* hist, const char* flavor, const char* dir, bool doData, int rebin, bool normalize, float mcnorm ) {
-TCanvas* stackHistAuto( const char* path, const char* hist, const char* flavor, const char* dir, bool doData, int rebin, bool normalize, float mcnorm, int doSig, const char* scalesample ) {
+TCanvas* stackHistAuto( const char* path, const char* hist, const char* flavor, const char* dir, bool doData, int rebin, bool normalize, float mcnorm, int doSig, bool doRatio, const char* scalesample ) {
   initialize(path, doData, doSig);
   histStyle style = getHistStyle(hist);
   TCanvas* c = new TCanvas();
   compareDataMC( mcfiles_ , mclabels_ , data_ , hist , flavor , dir ,
   		 style.nbins/rebin ,  style.xmin , style.xmax , (style.xtitle).c_str() ,
-		 doData , doData , true , style.log, normalize , false , mcnorm, scalesample );
+		 doData , doData && doRatio , true , style.log, normalize , false , mcnorm, scalesample );
   // compareDataMC( mcfiles_ , mclabels_ , data_ , hist , flavor , dir ,
   // 		 style.nbins/rebin ,  style.xmin , style.xmax , (style.xtitle).c_str() ,
   // 			doData , doData , true , style.log, normalize , false , mcnorm );
@@ -278,6 +281,7 @@ void printCutflowRegion( const char* path, const char* dir, bool doData, int lat
     dirs.push_back("cr1_metlast_mt_nm1");
     dirs.push_back("cr1_metlast_met_nm1");
     dirs.push_back("cr1_metlast_met100");
+    dirs.push_back("cr1_metlast_met125");
     dirs.push_back("cr1_metlast_met150");
     dirs.push_back("cr1_metlast_final");
   } else if (tdir.EqualTo("cr2")) {
@@ -300,10 +304,11 @@ void printCutflowRegion( const char* path, const char* dir, bool doData, int lat
     dirs.push_back("cr23_presel");
     dirs.push_back("cr23_bbmass_nm1");
     dirs.push_back("cr23_mt_nm1"); 
-    //    dirs.push_back("cr23_mt2blfirst");
+    dirs.push_back("cr23_mt2bl_nm1");
     dirs.push_back("cr23_met_nm1");
-    //    dirs.push_back("cr23_mt2bl_nm1");
-    dirs.push_back("cr23_mt2blcut");
+    dirs.push_back("cr23_met100");
+    dirs.push_back("cr23_met125");
+    dirs.push_back("cr23_met150");
     dirs.push_back("cr23_final");
   // } else if (tdir.EqualTo("cr2")) {
   //   dirs.push_back("cr2_presel");
@@ -333,6 +338,7 @@ void printCutflowRegion( const char* path, const char* dir, bool doData, int lat
     dirs.push_back("cr5_metlast_mt_nm1");
     dirs.push_back("cr5_metlast_met_nm1");
     dirs.push_back("cr5_metlast_met100");
+    dirs.push_back("cr5_metlast_met125");
     dirs.push_back("cr5_metlast_met150");
     dirs.push_back("cr5_metlast_final");
   } else if (tdir.EqualTo("cr6_metlast")) {
@@ -362,6 +368,7 @@ void printCutflowRegion( const char* path, const char* dir, bool doData, int lat
     dirs.push_back("cr8_metlast_mt_nm1");
     dirs.push_back("cr8_metlast_met_nm1");
     dirs.push_back("cr8_metlast_met100");
+    dirs.push_back("cr8_metlast_met125");
     dirs.push_back("cr8_metlast_met150");
     dirs.push_back("cr8_metlast_final");
   } else if (tdir.EqualTo("cr13")) {
@@ -378,6 +385,7 @@ void printCutflowRegion( const char* path, const char* dir, bool doData, int lat
     dirs.push_back("cr14_mt_nm1");
     dirs.push_back("cr14_met_nm1");
     dirs.push_back("cr14_met100");
+    dirs.push_back("cr14_met125");
     dirs.push_back("cr14_met150");
     dirs.push_back("cr14_final");
   } else {
@@ -927,7 +935,7 @@ histStyle getHistStyle( const char* hist ) {
     style.nbins = 20;
     style.xmin = 0.;
     style.xmax = 500.;
-    style.xtitle = "M(b#bar{b}) [GeV]";
+    style.xtitle = "M_{b#bar{b}} [GeV]";
     style.log = false;
   } else if (matchHistName(histString,"h_bbmdrpt")) {
     style.nbins = 25;

@@ -582,8 +582,8 @@ float getSystError( const TString sample ){
   else if (sample.Contains("dilep top")) return 0.4;
   else if (sample.Contains("lep plus b")) return 0.5;
   else if (sample.Contains("top 1l")) return 0.5;
-  else if (sample.Contains("TChi")) return 0.0;
-  else if (sample.Contains("Wino")) return 0.0;
+  else if (sample.Contains("TChi")) return 0.12;
+  else if (sample.Contains("Wino")) return 0.12;
   //  else if (sample.Contains("TChi")) return 0.1;
 
   std::cout << "ERROR: getSystError: didn't recognize sample: " << sample << std::endl;
@@ -688,21 +688,37 @@ void initSymbols( int latex ){
 //______________________________________________________________________________
 int getColor(const TString sample) {
 
-  // original color scheme
-  if (sample.Contains("ttbar 2l")) return 7;
-  else if (sample.Contains("ttbar 1l")) return 4;
-  else if (sample.Contains("wlight")) return 2;
-  else if (sample.Contains("wbb")) return 5;
-  else if (sample.Contains("single top 1l")) return 8;
-  else if (sample.Contains("single top 2l")) return 9;
+  // // original color scheme
+  // if (sample.Contains("ttbar 2l")) return 7;
+  // else if (sample.Contains("ttbar 1l")) return 4;
+  // else if (sample.Contains("wlight")) return 2;
+  // else if (sample.Contains("wbb")) return 5;
+  // else if (sample.Contains("single top 1l")) return 8;
+  // else if (sample.Contains("single top 2l")) return 9;
+  // else if (sample.Contains("rare")) return 15;
+  // else if (sample.Contains("whbb")) return 12;
+  // else if (sample.Contains("dilep top")) return 7;
+  // else if (sample.Contains("lep plus b")) return 4;
+  // else if (sample.Contains("top 1l")) return 4;
+  // else if (sample.Contains("_200_1")) return 2;
+  // else if (sample.Contains("_250_1")) return 4;
+  // else if (sample.Contains("_300_1")) return 3;
+
+  // "standard" color scheme from top group
+  if (sample.Contains("ttbar 2l")) return kRed-4; 
+  else if (sample.Contains("ttbar 1l")) return kRed-3;
+  else if (sample.Contains("wlight")) return kGreen-2;
+  else if (sample.Contains("wbb")) return kGreen-3;
+  else if (sample.Contains("single top 1l")) return kMagenta+2;
+  else if (sample.Contains("single top 2l")) return kMagenta;
   else if (sample.Contains("rare")) return 15;
   else if (sample.Contains("whbb")) return 12;
-  else if (sample.Contains("dilep top")) return 7;
-  else if (sample.Contains("lep plus b")) return 4;
-  else if (sample.Contains("top 1l")) return 4;
-  else if (sample.Contains("_200_1")) return 2;
-  else if (sample.Contains("_250_1")) return 4;
-  else if (sample.Contains("_300_1")) return 3;
+  else if (sample.Contains("dilep top")) return kRed-4;
+  else if (sample.Contains("lep plus b")) return kRed-3;
+  else if (sample.Contains("top 1l")) return kRed-3;
+  else if (sample.Contains("_200_1")) return kBlue;
+  else if (sample.Contains("_250_1")) return kMagenta;
+  else if (sample.Contains("_300_1")) return kCyan+1;
 
   std::cout << "ERROR: getColor: didn't recognize sample: " << sample << std::endl;
   return 1;
@@ -716,7 +732,7 @@ TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1,
   TH1F*    datahist = new TH1F("datahist","datahist",1,0,1);
   datahist->Sumw2();
 
-  if( overlayData ) leg->AddEntry(datahist,"data");
+  if( overlayData ) leg->AddEntry(datahist,"Data");
 
   const unsigned int nmc = labels.size();
   TH1F*    mchist[nmc];
@@ -728,35 +744,38 @@ TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1,
   for( unsigned int imc = 0 ; imc < nmc ; imc++ ){
   //for( int imc = nmc - 1 ; imc >= 0 ; imc-- ){
 
-    char* t = labels.at(imc);
+    TString mclabel(labels.at(imc));
 
-    if( TString(t).Contains("TChiwh") || TString(t).Contains("Wino") )   continue;
+    if( mclabel.Contains("TChiwh") || mclabel.Contains("Wino") )   continue;
 
     mchist[imc] = new TH1F(Form("mc_%i",imc),Form("mc_%i",imc),1,0,1);
 
     // formatting
     mchist[imc]->SetFillColor( getColor(labels.at(imc)) );
 
-    if( strcmp("tt",t)      == 0 ) t = "t#bar{t}";
-    if( strcmp("ttbar",t)   == 0 ) t = "t#bar{t}";
-    if( strcmp("ttbar 1l",t)== 0 ) t = "t#bar{t} #rightarrow 1l";
-    if( strcmp("ttbar 2l",t)== 0 ) t = "t#bar{t} #rightarrow 2l";
-    if( strcmp("ttll",t)    == 0 ) t = "t#bar{t} #rightarrow ll";
-    if( strcmp("tttau",t)   == 0 ) t = "t#bar{t} #rightarrow l#tau/#tau#tau";
-    if( strcmp("ttfake",t)  == 0 ) t = "t#bar{t} #rightarrow fake";
-    if( strcmp("t",t)       == 0 ) t = "single top";
-    if( strcmp("single_top",t)       == 0 ) t = "single top";
-    if( strcmp("wjets",t)   == 0 ) t = "W+jets";
-    if( strcmp("wlight",t)   == 0 ) t = "W+light jets";
-    if( strcmp("wbb",t)   == 0 ) t = "W+b#bar{b}";
-    if( strcmp("zjets",t)   == 0 ) t = "Z+jets";
-    if( strcmp("ww",t)      == 0 ) t = "WW";
-    if( strcmp("wz",t)      == 0 ) t = "WZ";
-    if( strcmp("zz",t)      == 0 ) t = "ZZ";
-    if( strcmp("whbb",t)      == 0 ) t = "WH #rightarrow l#nubb";
+    if( mclabel == "tt" ) mclabel = "t#bar{t}";
+    else if( mclabel == "ttbar" ) mclabel = "t#bar{t}";
+    else if( mclabel == "ttbar 1l" ) mclabel = "t#bar{t} #rightarrow 1l";
+    else if( mclabel == "ttbar 2l" ) mclabel = "t#bar{t} #rightarrow 2l";
+    else if( mclabel == "ttll" ) mclabel = "t#bar{t} #rightarrow ll";
+    else if( mclabel == "tttau" ) mclabel = "t#bar{t} #rightarrow l#tau/#tau#tau";
+    else if( mclabel == "ttfake" ) mclabel = "t#bar{t} #rightarrow fake";
+    else if( mclabel == "t" ) mclabel = "single top";
+    else if( mclabel == "single_top" ) mclabel = "single top";
+    else if( mclabel == "wjets" ) mclabel = "W+jets";
+    else if( mclabel == "wlight" ) mclabel = "W+light jets";
+    else if( mclabel == "wbb" ) mclabel = "W+b#bar{b}";
+    else if( mclabel == "zjets" ) mclabel = "Z+jets";
+    else if( mclabel == "ww" ) mclabel = "WW";
+    else if( mclabel == "wz" ) mclabel = "WZ";
+    else if( mclabel == "zz" ) mclabel = "ZZ";
+    else if( mclabel == "whbb" ) mclabel = "WH #rightarrow l#nubb";
+    else if( mclabel == "dilep top" ) mclabel = "2l top";
+    else if( mclabel == "top 1l" ) mclabel = "1l top";
+    else if( mclabel == "rare" ) mclabel = "Rare";
 
     //leg->AddEntry(mchist[imc],labels.at(imc),"f");
-    leg->AddEntry(mchist[imc],t,"f");
+    leg->AddEntry(mchist[imc],mclabel,"f");
     
   }
 
@@ -769,9 +788,9 @@ TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1,
   for( unsigned int imc = 0 ; imc < nmc ; imc++ ){
   //  for( int imc = nmc - 1 ; imc >= 0 ; imc-- ){
 
-    char* t = labels.at(imc);
+    TString mclabel(labels.at(imc));
 
-    if( !TString(t).Contains("TChiwh") && !TString(t).Contains("Wino") )   continue;
+    if( !mclabel.Contains("TChiwh") && !mclabel.Contains("Wino") )   continue;
 
     mchist[imc] = new TH1F(Form("mc_%i",imc),Form("mc_%i",imc),1,0,1);
 
@@ -782,20 +801,20 @@ TLegend *getLegend( vector<char*> labels , bool overlayData, float x1, float y1,
     //    mchist[imc]->SetLineStyle(2);
     ++nsigmc;
 
-    if( strcmp("ttall",t) == 0 ) t = "t#bar{t}";
-    if( strcmp("t",t)     == 0 ) t = "single top";
-    if( strcmp("wjets",t) == 0 ) t = "W+jets";
-    if( strcmp("WW",t)    == 0 ) t = "W^{+}W^{-}";
-    if( strcmp("WZ",t)    == 0 ) t = "W^{#pm}Z^{0}";
-    if( strcmp("ZZ",t)    == 0 ) t = "Z^{0}Z^{0}";
+    if (mclabel.Contains("Wino_")) {
+      mclabel.ReplaceAll("_","/");
+      mclabel.ReplaceAll("Wino/","#tilde{#chi}_{1}^{#pm}#tilde{#chi}_{2}^{0} #rightarrow (W#tilde{#chi}_{1}^{0})(H#tilde{#chi}_{1}^{0}) (");
+      mclabel += ")";
+    }
 
     //leg->AddEntry(mchist[imc],labels.at(imc),"f");
-    leg->AddEntry(mchist[imc],t,"f");
+    leg->AddEntry(mchist[imc],mclabel,"f");
     
   }
 
   leg->SetFillColor(0);
   leg->SetBorderSize(0);
+  leg->SetTextSize(0.026);
   
   return leg;
 
@@ -825,17 +844,23 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
 
   if( residual ){
     fullpad = new TPad("fullpad","fullpad",0,0,1,1);
+    //    fullpad->SetRightMargin(0.05);
+    plotpad->SetBottomMargin(0.05);
     fullpad->Draw();
     fullpad->cd();
 
     plotpad = new TPad("plotpad","plotpad",0,0,1,0.8);
+    plotpad->SetRightMargin(0.05);
     plotpad->Draw();
     plotpad->cd();
     if( log ) plotpad->SetLogy();
   }
   else{
+    gPad->SetRightMargin(0.05);
+    //    gPad->SetBottomMargin(0.05);
     if( log ) gPad->SetLogy();
   }
+
 
   cout << "Plotting " << fullhistname << endl;
 
@@ -957,6 +982,7 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
   mctothist->SetLineColor(kBlack);
 
   ytitle += Form(" / %d GeV",rebinFactor);
+  float max = 1.;
 
   if( overlayData ){
 
@@ -974,17 +1000,16 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     datahist->SetBinContent(nbins,lastbin_and_overflow);
     datahist->SetBinError(nbins,err);
 
-    float max = datahist->GetMaximum() + datahist->GetBinError(datahist->GetMaximumBin());
+    max = datahist->GetMaximum() + datahist->GetBinError(datahist->GetMaximumBin());
     if( mctothist->GetMaximum() > max ) max = mctothist->GetMaximum();
-    if( log ) datahist->SetMaximum( 90 * max );
-    else      datahist->SetMaximum( 1.4 * max );
 
     datahist->GetXaxis()->SetTitle(xtitle);
     datahist->GetXaxis()->SetTitleSize(0.05);
     datahist->GetXaxis()->SetLabelSize(0.04);
-    datahist->GetXaxis()->SetTitleOffset(1.2);
+    datahist->GetXaxis()->SetTitleOffset(1.0);
     datahist->GetYaxis()->SetTitle(ytitle);
     datahist->GetYaxis()->SetTitleSize(0.05);
+    datahist->GetYaxis()->SetTitleOffset(1.20);
     datahist->SetLineColor(kBlack);
     datahist->SetMarkerColor(kBlack);
     datahist->SetMarkerStyle(20);
@@ -992,9 +1017,13 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     mcstack->Draw("samehist");
     if (nmcsig > 0) {
       for (int i = (int) mcsighist.size() - 1; i > -1 ; i--) {
+	mcsighist[i]->Add(mctothist);
+        if( mcsighist[i]->GetMaximum() > max ) max = mcsighist[i]->GetMaximum();
 	mcsighist[i]->Draw("samehist");
       }
     }
+    if( log ) datahist->SetMaximum( 90 * max );
+    else      datahist->SetMaximum( 1.4 * max );
     datahist->Draw("sameE1");
     datahist->Draw("sameaxis");
     
@@ -1008,7 +1037,7 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
   }
   else{
 
-    float max = mctothist->GetMaximum() + mctothist->GetBinError(mctothist->GetMaximumBin());
+    max = mctothist->GetMaximum() + mctothist->GetBinError(mctothist->GetMaximumBin());
     if( log ) mctothist->SetMaximum( 90 * max );
     else      mctothist->SetMaximum( 1.4 * max );
 
@@ -1020,6 +1049,8 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
     mctothist->Draw("hist same axis");
     if (nmcsig > 0) {
       for (int i = (int) mcsighist.size() - 1; i > -1 ; i--) {
+	mcsighist[i]->Add(mctothist);
+        if( mcsighist[i]->GetMaximum() > max ) max = mcsighist[i]->GetMaximum();
 	mcsighist[i]->Draw("samehist");
       }
     }
@@ -1030,38 +1061,60 @@ TGraphErrors* compareDataMC( vector<TFile*> mcfiles , vector<char*> labels , TFi
   datamchists.mctothist = mctothist;
 
   if( drawLegend ){
-    TLegend* myleg = getLegend( labels , overlayData );
+    TLegend* myleg = 0;
+    if (nmcsig > 0) myleg = getLegend( labels , overlayData, 0.57, 0.45, 0.88, 0.94 );
+    else myleg = getLegend( labels , overlayData );
     myleg->Draw();
   }
 
   TLatex *text = new TLatex();
   text->SetNDC();
-  text->SetTextSize(0.04);
+  text->SetTextSize(0.03);
   text->DrawLatex(0.2,0.88,"CMS Preliminary");
   //text->DrawLatex(0.2,0.83,"0.98 fb^{-1} at #sqrt{s} = 7 TeV");
   text->DrawLatex(0.2,0.83,"#sqrt{s} = 8 TeV, #scale[0.6]{#int}Ldt = 19.5 fb^{-1}");
 
-  if     ( TString(flavor).Contains("ee")  ) text->DrawLatex(0.2,0.78,"Events with ee");
-  else if( TString(flavor).Contains("mm")  ) text->DrawLatex(0.2,0.78,"Events with #mu#mu");
-  else if( TString(flavor).Contains("em")  ) text->DrawLatex(0.2,0.78,"Events with e#mu");
-  else if( TString(flavor).Contains("all") ) text->DrawLatex(0.2,0.78,"Events with ee/#mu#mu/e#mu");
-  else if( TString(flavor).Contains("sf")  ) text->DrawLatex(0.2,0.78,"Events with ee/#mu#mu");
-  else if( TString(flavor).Contains("3l")  ) text->DrawLatex(0.2,0.78,"Events with eee/ee#mu/#mu#mue/#mu#mu#mu");
-  else if( TString(flavor).Contains("e")  ) text->DrawLatex(0.2,0.78,"Events with e");
-  else if( TString(flavor).Contains("m")  ) text->DrawLatex(0.2,0.78,"Events with #mu");
-  else if( TString(flavor).Contains("sl")  ) text->DrawLatex(0.2,0.78,"Events with e/#mu");
-  else                                       text->DrawLatex(0.2,0.78,"Events with e/#mu");
+  // if     ( TString(flavor).Contains("ee")  ) text->DrawLatex(0.2,0.78,"Events with ee");
+  // else if( TString(flavor).Contains("mm")  ) text->DrawLatex(0.2,0.78,"Events with #mu#mu");
+  // else if( TString(flavor).Contains("em")  ) text->DrawLatex(0.2,0.78,"Events with e#mu");
+  // else if( TString(flavor).Contains("all") ) text->DrawLatex(0.2,0.78,"Events with ee/#mu#mu/e#mu");
+  // else if( TString(flavor).Contains("sf")  ) text->DrawLatex(0.2,0.78,"Events with ee/#mu#mu");
+  // else if( TString(flavor).Contains("3l")  ) text->DrawLatex(0.2,0.78,"Events with eee/ee#mu/#mu#mue/#mu#mu#mu");
+  // else if( TString(flavor).Contains("e")  ) text->DrawLatex(0.2,0.78,"Events with e");
+  // else if( TString(flavor).Contains("m")  ) text->DrawLatex(0.2,0.78,"Events with #mu");
+  // else if( TString(flavor).Contains("sl")  ) text->DrawLatex(0.2,0.78,"Events with e/#mu");
+  // else                                       text->DrawLatex(0.2,0.78,"Events with e/#mu");
   //else                                       text->DrawLatex(0.2,0.78,"Events with e#mu");
   //else                                       text->DrawLatex(0.2,0.78,"Events with #mu#mu");
   // label for specific control regions
-  if (tsdir.Contains("cr1_")) text->DrawLatex(0.2,0.73,"M(b#bar{b}) > 150 GeV");
-  else if (tsdir.Contains("cr8_")) text->DrawLatex(0.2,0.73,"M(b#bar{b}) < 100 GeV");
-  else if (tsdir.Contains("cr14_")) text->DrawLatex(0.2,0.73,"M(b#bar{b}) < 100 GeV or M(b#bar{b}) > 150 GeV");
+  float yval = 0.78;
+  if (tsdir.Contains("cr1_")) text->DrawLatex(0.2,yval,"M(b#bar{b}) > 150 GeV");
+  else if (tsdir.Contains("cr8_")) text->DrawLatex(0.2,yval,"M(b#bar{b}) < 100 GeV");
+  else if (tsdir.Contains("cr14_")) text->DrawLatex(0.2,yval,"M(b#bar{b}) < 100 GeV or M(b#bar{b}) > 150 GeV");
+  else if (tsdir.Contains("_met100")) text->DrawLatex(0.2,yval,"E_{T}^{miss} > 100 GeV");
+  else if (tsdir.Contains("_met125")) text->DrawLatex(0.2,yval,"E_{T}^{miss} > 125 GeV");
+  else if (tsdir.Contains("_met150")) text->DrawLatex(0.2,yval,"E_{T}^{miss} > 150 GeV");
+  else if (tsdir.Contains("_bbmass_nm1")) text->DrawLatex(0.2,yval,"E_{T}^{miss} > 175 GeV");
+
+  // // draw lines for signal region -- doesn't look so good...
+  // if (fullhistname.Contains("sig_bbmasslast") && fullhistname.Contains("h_bbmass") ) {
+  //   TLine* line_high = new TLine(150.,0.,150.,max*1.05);
+  //   line_high->SetLineColor(kGray+2);
+  //   line_high->SetLineWidth(2);
+  //   line_high->SetLineStyle(2);
+  //   line_high->Draw("same");
+  //   TLine* line_low = new TLine(100.,0.,100.,max*1.05);
+  //   line_low->SetLineColor(kGray+2);
+  //   line_low->SetLineWidth(2);
+  //   line_low->SetLineStyle(2);
+  //   line_low->Draw("same");
+  // }
 
   if( residual ){
     fullpad->cd();
 
     respad = new TPad("respad","respad",0,0.8,1,0.98);
+    respad->SetRightMargin(0.05);
     respad->Draw();
     respad->cd();
     respad->SetTopMargin(0.05);
